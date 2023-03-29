@@ -74,7 +74,8 @@ class CadViewer(qw.QMainWindow):
         self._bbox_cache = ezdxf.bbox.Cache()
 
         self.view = CADGraphicsViewWithOverlay()
-        self.view.setScene(qw.QGraphicsScene())
+        self.scence = qw.QGraphicsScene()
+        self.view.setScene(self.scence)
         self.view.scale(1, -1)  # so that +y is up
         self.view.element_selected.connect(self._on_element_selected)
         self.view.mouse_moved.connect(self._on_mouse_moved)
@@ -200,16 +201,10 @@ class CadViewer(qw.QMainWindow):
             item = qw.QListWidgetItem()
             self.layers.addItem(item)
             checkbox = qw.QCheckBox(name)
-            checkbox.setCheckState(
-                qc.Qt.Checked if layer.is_visible else qc.Qt.Unchecked
-            )
+            checkbox.setCheckState(qc.Qt.Checked if layer.is_visible else qc.Qt.Unchecked)
             checkbox.stateChanged.connect(self._layers_updated)
-            text_color = (
-                "#FFFFFF" if is_dark_color(layer.color, 0.4) else "#000000"
-            )
-            checkbox.setStyleSheet(
-                f"color: {text_color}; background-color: {layer.color}"
-            )
+            text_color = ("#FFFFFF" if is_dark_color(layer.color, 0.4) else "#000000")
+            checkbox.setStyleSheet(f"color: {text_color}; background-color: {layer.color}")
             self.layers.setItemWidget(item, checkbox)
         self.layers.blockSignals(False)
 
@@ -242,7 +237,7 @@ class CadViewer(qw.QMainWindow):
             start = time.perf_counter()
             self.create_frontend().draw_layout(layout)
             duration = time.perf_counter() - start
-            print(f"took {duration:.4f} seconds")
+            print(f"draw layout {layout_name} took {duration:.4f} seconds")
         except DXFStructureError as e:
             qw.QMessageBox.critical(
                 self,
