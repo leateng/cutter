@@ -148,6 +148,12 @@ class CadViewer(qw.QMainWindow):
                         doc, auditor = recover.readfile(path)
                     else:
                         auditor = doc.audit()
+
+                # force use songti
+                for st in doc.styles:
+                    st.set_dxf_attrib("font", "simsun.ttc")
+                    st.set_dxf_attrib("bigfont", "simsun.ttc")
+
                 self.set_document(doc, auditor)
             except IOError as e:
                 qw.QMessageBox.critical(self, "Loading Error", str(e))
