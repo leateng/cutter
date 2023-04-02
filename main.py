@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QTableView,
     QTreeView,
     QListView,
+    QPushButton,
 )
 from PySide6.QtCore import (
     QAbstractTableModel,
@@ -79,6 +80,9 @@ class CadViewer(qw.QMainWindow):
         self.view.element_selected.connect(self._on_element_selected)
         self.view.mouse_moved.connect(self._on_mouse_moved)
 
+        self.file_button = QPushButton("select file")
+        self.file_button.clicked.connect(self._select_doc)
+
         menu = self.menuBar()
         select_doc_action = QAction("Select Document", self)
         select_doc_action.triggered.connect(self._select_doc)
@@ -95,6 +99,7 @@ class CadViewer(qw.QMainWindow):
             "QListWidget {font-size: 12pt;} "
             "QCheckBox {font-size: 12pt; padding-left: 5px;}"
         )
+        self.sidebar.addWidget(self.file_button)
         self.sidebar.addWidget(self.layers)
         info_container = qw.QWidget()
         info_layout = qw.QVBoxLayout()
@@ -109,6 +114,7 @@ class CadViewer(qw.QMainWindow):
 
         container = qw.QSplitter()
         self.setCentralWidget(container)
+
         container.addWidget(self.view)
         container.addWidget(self.sidebar)
         container.setCollapsible(0, False)
