@@ -6,6 +6,7 @@ import sys
 import time
 
 from PySide6 import QtWidgets as qw, QtCore as qc, QtGui as qg
+from PySide6 import QtGui
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -30,8 +31,12 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import (
     QAction,
+    QBrush,
     QColor,
     QPainterPath,
+    QPen,
+    QPolygon,
+    QPolygonF,
     QStandardItem,
     QStandardItemModel,
 )
@@ -75,7 +80,8 @@ class CadViewer(qw.QMainWindow):
         self._bbox_cache = ezdxf.bbox.Cache()
 
         self.view = CADGraphicsViewWithOverlay()
-        self.view.setScene(qw.QGraphicsScene())
+        self.scence = qw.QGraphicsScene()
+        self.view.setScene(self.scence)
         self.view.scale(1, -1)  # so that +y is up
         self.view.element_selected.connect(self._on_element_selected)
         self.view.mouse_moved.connect(self._on_mouse_moved)
@@ -148,6 +154,12 @@ class CadViewer(qw.QMainWindow):
                         doc, auditor = recover.readfile(path)
                     else:
                         auditor = doc.audit()
+
+                # force use songti
+                for st in doc.styles:
+                    st.set_dxf_attrib("font", "simsun.ttc")
+                    st.set_dxf_attrib("bigfont", "simsun.ttc")
+
                 self.set_document(doc, auditor)
             except IOError as e:
                 qw.QMessageBox.critical(self, "Loading Error", str(e))
@@ -206,16 +218,10 @@ class CadViewer(qw.QMainWindow):
             item = qw.QListWidgetItem()
             self.layers.addItem(item)
             checkbox = qw.QCheckBox(name)
-            checkbox.setCheckState(
-                qc.Qt.Checked if layer.is_visible else qc.Qt.Unchecked
-            )
+            checkbox.setCheckState(qc.Qt.Checked if layer.is_visible else qc.Qt.Unchecked)
             checkbox.stateChanged.connect(self._layers_updated)
-            text_color = (
-                "#FFFFFF" if is_dark_color(layer.color, 0.4) else "#000000"
-            )
-            checkbox.setStyleSheet(
-                f"color: {text_color}; background-color: {layer.color}"
-            )
+            text_color = ("#FFFFFF" if is_dark_color(layer.color, 0.4) else "#000000")
+            checkbox.setStyleSheet(f"color: {text_color}; background-color: {layer.color}")
             self.layers.setItemWidget(item, checkbox)
         self.layers.blockSignals(False)
 
@@ -241,6 +247,7 @@ class CadViewer(qw.QMainWindow):
         self._current_layout = layout_name
         self.view.begin_loading()
         new_scene = qw.QGraphicsScene()
+        self._draw_coordinate_axis(new_scene, 20)
         self._backend.set_scene(new_scene)
         layout = self.doc.layout(layout_name)
         self._update_render_context(layout)
@@ -248,7 +255,7 @@ class CadViewer(qw.QMainWindow):
             start = time.perf_counter()
             self.create_frontend().draw_layout(layout)
             duration = time.perf_counter() - start
-            print(f"took {duration:.4f} seconds")
+            print(f"draw layout {layout_name} took {duration:.4f} seconds")
         except DXFStructureError as e:
             qw.QMessageBox.critical(
                 self,
@@ -281,6 +288,34 @@ class CadViewer(qw.QMainWindow):
         for i in range(self.layers.count()):
             item = self.layers.itemWidget(self.layers.item(i))
             yield i, item  # type: ignore
+
+    def _draw_coordinate_axis(self, scene: qw.QGraphicsScene, axis_len: float = 10) -> None:
+        x_color = Qt.GlobalColor.green
+        y_color = Qt.GlobalColor.red
+
+        brush = QBrush(x_color)
+        pen = QPen(x_color)
+        pen.setCosmetic(True)
+    
+        right_arrow = QPolygonF()
+        right_arrow.append(QPointF(0, 1))
+        right_arrow.append(QPointF(2, 0))
+        right_arrow.append(QPointF(0, -1))
+        right_arrow.translate(axis_len, 0)
+
+        up_arrow = QPolygonF()
+        up_arrow.append(QPointF(1, 0))
+        up_arrow.append(QPointF(0, 2))
+        up_arrow.append(QPointF(-1, 0))
+        up_arrow.translate(0, axis_len)
+
+        scene.addLine(0, 0, axis_len, 0, pen)
+        scene.addPolygon(right_arrow, pen, brush)
+
+        pen.setColor(y_color)
+        brush.setColor(y_color)
+        scene.addLine(0, 0, 0, axis_len, pen)
+        scene.addPolygon(up_arrow, pen, brush)
 
     @Slot(int)  # type: ignore
     def _layers_updated(self, item_state: qc.Qt.CheckState):
