@@ -1,4 +1,5 @@
 import ezdxf
+import sys
 from ezdxf.document import Drawing
 # from ezdxf.groupby import groupby
 from IPython import embed
@@ -35,7 +36,7 @@ def print_entities(doc: Drawing):
 # doc.saveas("./text.dxf")
 
 
-doc = ezdxf.readfile("./dxf-example/gb.dxf")
+doc = ezdxf.readfile(f"./dxf-example/{sys.argv[1]}.dxf")
 msp = doc.modelspace()
 # print_layers_name(doc)
 print_entity_by_layer(doc)
