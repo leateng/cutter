@@ -1,4 +1,4 @@
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QToolBar
 import ezdxf
@@ -27,38 +27,39 @@ class MainWindow(QMainWindow):
         toolbar = QToolBar("My main toolbar")
         toolbar.setIconSize(QSize(32, 32))
         toolbar.setMovable(False)
+        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.addToolBar(toolbar)
 
         action_start_machine = QAction(QIcon(QPixmap(":/images/start.png")), "启动机器", self)
-        action_start_machine.setIconText("start")
-        action_start_machine.setStatusTip("This is your button")
+        # action_start_machine.setIconText("start")
+        # action_start_machine.setStatusTip("This is your button")
         action_start_machine.triggered.connect(self.onStartCutter)
         action_start_machine.setCheckable(False)
         toolbar.addAction(action_start_machine)
 
-        action_open_recipe = QAction(QIcon(QPixmap(":/images/folder.png")), "启动机器", self)
-        action_open_recipe.setIconText("start")
-        action_open_recipe.setStatusTip("open recipe")
+        action_open_recipe = QAction(QIcon(QPixmap(":/images/folder.png")), "配方管理", self)
+        # action_open_recipe.setIconText("start")
+        # action_open_recipe.setStatusTip("open recipe")
         action_open_recipe.triggered.connect(self.onStartCutter)
         action_open_recipe.setCheckable(False)
         toolbar.addAction(action_open_recipe)
 
-        action_user_manage = QAction(QIcon(QPixmap(":/images/add-user.png")), "启动机器", self)
-        action_user_manage.setStatusTip("button")
+        action_user_manage = QAction(QIcon(QPixmap(":/images/add-user.png")), "用户管理", self)
+        # action_user_manage.setStatusTip("button")
         action_user_manage.triggered.connect(self.onStartCutter)
         action_user_manage.setCheckable(False)
         toolbar.addAction(action_user_manage)
 
-        action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "启动机器", self)
-        action_controller.setIconText("start")
-        action_controller.setStatusTip("This is your button")
+        action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "JOY", self)
+        # action_controller.setIconText("start")
+        # action_controller.setStatusTip("This is your button")
         action_controller.triggered.connect(self.onStartCutter)
         action_controller.setCheckable(False)
         toolbar.addAction(action_controller)
 
-        action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "启动机器", self)
-        action_about_us.setIconText("start")
-        action_about_us.setStatusTip("About Us")
+        action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
+        # action_about_us.setIconText("start")
+        # action_about_us.setStatusTip("About Us")
         action_about_us.triggered.connect(self.onStartCutter)
         action_about_us.setCheckable(False)
         toolbar.addAction(action_about_us)
