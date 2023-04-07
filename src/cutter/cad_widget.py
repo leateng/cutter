@@ -4,7 +4,7 @@ import ezdxf
 from PySide6.QtWidgets import QFileDialog, QFrame, QGraphicsView, QGraphicsScene, QApplication, QMainWindow, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsPathItem
 from PySide6.QtGui import QPen, QColor, QPainterPath, QPainter, QTransform, QWheelEvent, QBrush, QPolygonF, QAction
 from PySide6.QtCore import Qt, QRectF, QPointF
-from IPython import embed
+# from IPython import embed
 from ezdxf.lldxf.const import LWPOLYLINE_CLOSED
 
 def _get_x_scale(t: QTransform) -> float:
