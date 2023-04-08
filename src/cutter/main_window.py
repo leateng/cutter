@@ -1,11 +1,12 @@
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QIcon, QPixmap
-from PySide6.QtWidgets import QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QToolBar
+from PySide6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget
 import ezdxf
 from ezdxf.lldxf.const import DXFStructureError
 from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 import cutter.rc_images
+from cutter.recipe_combox import RecipeCombo
 
 
 class MainWindow(QMainWindow):
@@ -13,11 +14,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self._init_toolbar()
-        self.view = CADGraphicsView()
-        self.scene = DxfEntityScence([])
-        self.view.setScene(self.scene)
-        self.setCentralWidget(self.view)
-        self.view.fit_to_scene()
+        self._init_layout()
 
         menu = self.menuBar()
         select_doc_action = QAction("File", self)
@@ -45,7 +42,7 @@ class MainWindow(QMainWindow):
         action_open_recipe.setCheckable(False)
         toolbar.addAction(action_open_recipe)
 
-        action_user_manage = QAction(QIcon(QPixmap(":/images/add-user.png")), "用户管理", self)
+        action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
         # action_user_manage.setStatusTip("button")
         action_user_manage.triggered.connect(self.onStartCutter)
         action_user_manage.setCheckable(False)
@@ -76,6 +73,43 @@ class MainWindow(QMainWindow):
         # 添加标签和占位符到工具栏中
         toolbar.addWidget(spacer)
         toolbar.addWidget(banner_image)
+
+    def _init_layout(self):
+        self.main_splitter = QSplitter()
+        self.view = CADGraphicsView()
+        self.scene = DxfEntityScence([])
+        self.view.setScene(self.scene)
+        self.setCentralWidget(self.main_splitter)
+        self.recipe_combox = RecipeCombo()
+
+        left_layout = QVBoxLayout()
+        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        left_layout.addWidget(self.recipe_combox)
+        right_layout = QVBoxLayout()
+        right_layout.addWidget(self.view)
+
+        left_widget = QWidget()
+        left_widget.setLayout(left_layout)
+        right_widget = QWidget()
+        right_widget.setLayout(right_layout)
+
+
+        self.main_splitter.addWidget(left_widget)
+        self.main_splitter.addWidget(right_widget)
+        # self.setFixedSize(self.size())
+
+        # 设置左侧宽度
+        sizes = [300, 800]
+        self.main_splitter.setSizes(sizes)
+
+        # 使QSplitter右侧自适应大小
+        self.main_splitter.setStretchFactor(1, 1)
+        self.resize(1100, 900)
+        self.view.fit_to_scene()
+
+        # self.setCentralWidget(self.main_splitter)
+        # self.setLayout(main_layout)
+        print("here")
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(
