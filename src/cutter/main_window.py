@@ -1,6 +1,6 @@
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtGui import QAction, QIcon, QPixmap
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QToolBar
+from PySide6.QtWidgets import QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QToolBar
 import ezdxf
 from ezdxf.lldxf.const import DXFStructureError
 from cutter.about_dialog import AboutUsDialog
@@ -64,6 +64,18 @@ class MainWindow(QMainWindow):
         action_about_us.triggered.connect(self._open_about_us)
         action_about_us.setCheckable(False)
         toolbar.addAction(action_about_us)
+
+        # set background image
+        banner_image = QLabel()
+        banner_image.setPixmap(QPixmap(":/images/hc.png"))
+        banner_image.setScaledContents(True)  # 自动缩放图像以适应标签大小
+        banner_image.setStyleSheet("background: transparent;")
+        spacer = QLabel()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
+
+        # 添加标签和占位符到工具栏中
+        toolbar.addWidget(spacer)
+        toolbar.addWidget(banner_image)
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(
