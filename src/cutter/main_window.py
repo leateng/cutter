@@ -3,6 +3,7 @@ from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import QMainWindow, QFileDialog, QMessageBox, QToolBar
 import ezdxf
 from ezdxf.lldxf.const import DXFStructureError
+from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 import cutter.rc_images
 
@@ -60,7 +61,7 @@ class MainWindow(QMainWindow):
         action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
         # action_about_us.setIconText("start")
         # action_about_us.setStatusTip("About Us")
-        action_about_us.triggered.connect(self.onStartCutter)
+        action_about_us.triggered.connect(self._open_about_us)
         action_about_us.setCheckable(False)
         toolbar.addAction(action_about_us)
 
@@ -98,3 +99,7 @@ class MainWindow(QMainWindow):
 
     def onStartCutter(self):
         print("start machine")
+
+    def _open_about_us(self):
+        dlg = AboutUsDialog()
+        dlg.exec()
