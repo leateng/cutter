@@ -5,6 +5,7 @@ import ezdxf
 from ezdxf.lldxf.const import DXFStructureError
 from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
+from cutter.entity_tree import EntityTree
 import cutter.rc_images
 from cutter.recipe_combox import RecipeCombo
 
@@ -81,10 +82,12 @@ class MainWindow(QMainWindow):
         self.view.setScene(self.scene)
         self.setCentralWidget(self.main_splitter)
         self.recipe_combox = RecipeCombo()
+        self.entity_tree = EntityTree()
 
         left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         left_layout.addWidget(self.recipe_combox)
+        left_layout.addWidget(self.entity_tree)
         right_layout = QVBoxLayout()
         right_layout.addWidget(self.view)
 
