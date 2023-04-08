@@ -20,7 +20,7 @@ class AboutUsDialog(QDialog):
         image_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # 联系方式
-        address_logo_label = QLabel("addr:")
+        address_logo_label = QLabel()
         address_logo_label.setPixmap(qta.icon("ei.map-marker", color="white").pixmap(20, 20))
         address_label = QLabel("烟台总部：中国（山东）自贸区烟台片区长江路300号业达智谷\n华北研发中心：河北省保定市涿州市高新技术产业开发区和谷科技产业园B12楼\n西北研发中心：陕西省西安市未央区草滩生态产业园弘业一路远征科技园1幢3楼")
 
