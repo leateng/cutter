@@ -33,41 +33,29 @@ class MainWindow(QMainWindow):
         # action_start_machine.setIconText("start")
         # action_start_machine.setStatusTip("This is your button")
         action_start_machine.triggered.connect(self.onStartCutter)
-        action_start_machine.setCheckable(False)
         toolbar.addAction(action_start_machine)
 
         action_open_recipe = QAction(QIcon(QPixmap(":/images/folder.png")), "配方管理", self)
-        # action_open_recipe.setIconText("start")
-        # action_open_recipe.setStatusTip("open recipe")
         action_open_recipe.triggered.connect(self.onStartCutter)
-        action_open_recipe.setCheckable(False)
         toolbar.addAction(action_open_recipe)
 
         action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
-        # action_user_manage.setStatusTip("button")
         action_user_manage.triggered.connect(self.onStartCutter)
-        action_user_manage.setCheckable(False)
         toolbar.addAction(action_user_manage)
 
         action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "JOY", self)
-        # action_controller.setIconText("start")
-        # action_controller.setStatusTip("This is your button")
         action_controller.triggered.connect(self.onStartCutter)
-        action_controller.setCheckable(False)
         toolbar.addAction(action_controller)
 
         action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
-        # action_about_us.setIconText("start")
-        # action_about_us.setStatusTip("About Us")
         action_about_us.triggered.connect(self._open_about_us)
-        action_about_us.setCheckable(False)
         toolbar.addAction(action_about_us)
 
         # set background image
         banner_image = QLabel()
         banner_image.setPixmap(QPixmap(":/images/hc.png"))
         banner_image.setScaledContents(True)  # 自动缩放图像以适应标签大小
-        banner_image.setStyleSheet("background: transparent;")
+        banner_image.setStyleSheet("background: transparent; padding-right: 5px;")
         spacer = QLabel()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
 
@@ -102,17 +90,13 @@ class MainWindow(QMainWindow):
         # self.setFixedSize(self.size())
 
         # 设置左侧宽度
-        sizes = [300, 800]
+        sizes = [400, 1000]
         self.main_splitter.setSizes(sizes)
 
         # 使QSplitter右侧自适应大小
         self.main_splitter.setStretchFactor(1, 1)
-        self.resize(1100, 900)
+        self.resize(sum(sizes), 900)
         self.view.fit_to_scene()
-
-        # self.setCentralWidget(self.main_splitter)
-        # self.setLayout(main_layout)
-        print("here")
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(

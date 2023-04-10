@@ -14,7 +14,7 @@ if __name__ == "__main__":
         # 验证成功，启动程序
         print("Successful login")
         win = MainWindow()
-        win.resize(1200, 900)
+        # win.resize(1200, 900)
         win.show()
         app.exec()
     else:
