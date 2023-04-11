@@ -1,4 +1,4 @@
-PySide6==6.4.1
+PySide6==6.4.3
 ezdxf==1.0.2
 nuitka==1.5.5
 qtawesome==1.2.3

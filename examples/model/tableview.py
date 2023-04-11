@@ -13,7 +13,10 @@ ROLE_NAMES = {
         "3": "OP"
         }
 
+COLUMN_NAME_MAPPING = ["name", "dept", "role", "created_at"]
+
 class UserModel(QAbstractTableModel):
+
     def __init__(self, parent: Optional[PySide6.QtCore.QObject] = None) -> None:
         super().__init__(parent)
         self.rawData = [
@@ -26,13 +29,18 @@ class UserModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
             return ["姓名", "部门", "角色", "创建时间"][section]
 
-        return None
+        return super().headerData(section, orientation, role)
+
 
     def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = None) -> int:
         return len(self.rawData)
 
     def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = None ) -> int:
         return 4
+
+    def sort(self, column: int, order: PySide6.QtCore.Qt.SortOrder = ...) -> None:
+        print(f"sort column: {column} order: {order}")
+        return super().sort(column, order)
 
     # def flags(self, index):
     #     return Qt.ItemFlag.ItemIsEditable | super().flags(index)
@@ -45,24 +53,26 @@ class UserModel(QAbstractTableModel):
             data = self.rawData[row][column_name]
             print(f"Row{row}, Column{column}, column_name: {column_name}, data={data}")
 
-            if data != None:
+            if data:
                 if column_name == "role":
                     return ROLE_NAMES[str(data)]
                 elif column_name == "created_at":
                     return data.strftime("%Y-%m-%d %H:%M:%S")
                 else:
                     return data
-            
-            return None
         elif role == Qt.ItemDataRole.BackgroundRole:
             if index.row() % 2 == 0:
                return  QBrush(QColor(248, 249, 251))
 
+        # return super().data(index, role)
         return None
 
     def columnIndexToRowName(self, i: int) -> str:
         mapping = ["name", "dept", "role", "created_at"]
         return mapping[i]
+
+    def addUser(self, userData):
+        self.rawData.append(userData)
 
 
 class UsersGridView(QTableView):
@@ -72,18 +82,17 @@ class UsersGridView(QTableView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
-        self.setColumnWidth(0, 10)
-        self.setColumnWidth(1, 200)
-        self.setColumnWidth(2, 200)
-        self.setColumnWidth(3, 200)
-        # self.verticalHeader().hide()
+        # self.setColumnWidth(0, 200)
+        # self.setColumnWidth(1, 200)
+        # self.setColumnWidth(2, 200)
+        # self.setColumnWidth(3, 200)
+        # self.verticalHeader().show()
         self.setSortingEnabled(True)
 
         self.doubleClicked.connect(self.editUserDialog)
 
-    @Slot()
-    def sortByColumn(self, column: int, order: Qt.SortOrder):
-        print(f"column={column}, order={order}")
+    # def sortByColumn(self, column: int, order: Qt.SortOrder):
+    #     print(f"column={column}, order={order}")
 
     def editUserDialog(self, index: QModelIndex = None ) -> None:
         print("edit user")
@@ -101,9 +110,9 @@ class UsersDialog(QDialog):
         self.deleteUserButton.clicked.connect(self.deleteUsers)
 
         action_layout = QHBoxLayout()
+        action_layout.addStretch(1)
         action_layout.addWidget(self.addUserButton)
         action_layout.addWidget(self.deleteUserButton)
-        action_layout.addStretch(1)
 
         grid_layout = QHBoxLayout()
         grid_layout.addWidget(self.usersView)
@@ -127,15 +136,14 @@ class UsersDialog(QDialog):
             print(f"delete row {index.row()}")
 
     def addUser(self):
-        rawData = self.usersModel.rawData
-        rawData.append( {"name": "liteng", "dept": "QA", "role": 1, "created_at": datetime.now() })
-        # self.usersView.dataChanged
+        self.usersModel.addUser( {"name": "liteng", "dept": "QA", "role": 1, "created_at": datetime.now() })
+        self.usersModel.layoutChanged.emit()
 
 
 if __name__ == "__main__":
     app = QApplication([])
 
     dlg = UsersDialog()
-    dlg.resize(610, 800)
+    dlg.resize(1000, 620)
     dlg.show()
     app.exec()
