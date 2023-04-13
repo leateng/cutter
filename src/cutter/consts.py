@@ -5,3 +5,4 @@ ROLE_NAMES = {
         "2": "PE",
         "3": "OP"
         }
+SUPPORTED_ENTITY_TYPES = ["LINE", "ARC", "CIRCLE"]

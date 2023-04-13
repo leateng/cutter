@@ -105,6 +105,7 @@ class DxfEntityScence(QGraphicsScene):
         self.draw_entities()
 
     def draw_entities(self):
+        print(f"scene total entities: {len(self.entities)}")
         for entity in self.entities:
             item = self.create_qgraphicsitem_from_entity(entity)
             if item:
