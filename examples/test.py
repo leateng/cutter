@@ -2,7 +2,7 @@ import ezdxf
 import sys
 from ezdxf.document import Drawing
 # from ezdxf.groupby import groupby
-from IPython import embed
+# from IPython import embed
 
 def print_layers_name(doc):
     for l in doc.layers:

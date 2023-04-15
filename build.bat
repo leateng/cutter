@@ -1,1 +1,1 @@
-nuitka --standalone --disable-console --enable-plugin=pyside6 --enable-plugin=upx --nofollow-import-to=tkinter  --nofollow-import-to=pyqt5 --nofollow-import-to=matplotlib .\src\main.py
+nuitka --standalone --disable-console --enable-plugin=pyside6 --enable-plugin=upx --nofollow-import-to=tkinter --nofollow-import-to=IPython --nofollow-import-to=pyqt5 --nofollow-import-to=matplotlib --nofollow-import-to=ezdxf --include-package=typing_extensions  --include-package=qtawesome --include-package=pyparsing --include-package-data=qtawesome src\main.py
