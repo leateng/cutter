@@ -36,23 +36,23 @@ class MainWindow(QMainWindow):
         action_start_machine = QAction(QIcon(QPixmap(":/images/start.png")), "启动机器", self)
         # action_start_machine.setIconText("start")
         # action_start_machine.setStatusTip("This is your button")
-        action_start_machine.triggered.connect(self.onStartCutter)
+        action_start_machine.triggered.connect(self._unimplement)
         toolbar.addAction(action_start_machine)
 
         action_open_recipe = QAction(QIcon(QPixmap(":/images/folder.png")), "配方管理", self)
-        action_open_recipe.triggered.connect(self.onStartCutter)
+        action_open_recipe.triggered.connect(self._unimplement)
         toolbar.addAction(action_open_recipe)
 
         action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
-        action_user_manage.triggered.connect(self.onStartCutter)
+        action_user_manage.triggered.connect(self._unimplement)
         toolbar.addAction(action_user_manage)
 
         action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "JOY", self)
-        action_controller.triggered.connect(self.onStartCutter)
+        action_controller.triggered.connect(self._unimplement)
         toolbar.addAction(action_controller)
 
         generate_gcode = QAction(QIcon(QPixmap(":/images/gcode.png")), "生成GCODE", self)
-        generate_gcode.triggered.connect(self.onStartCutter)
+        generate_gcode.triggered.connect(self._unimplement)
         toolbar.addAction(generate_gcode)
 
         action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
@@ -164,3 +164,6 @@ class MainWindow(QMainWindow):
         self.b = QPushButton("click here")
         self.statusBar.addWidget(QLabel("x: 1, y:2 z: 3"))
         self.setStatusBar(self.statusBar)
+
+    def _unimplement(self):
+        QMessageBox.information(self, "Info", str("开发中"))
