@@ -10,5 +10,7 @@
     <file>images/folder.png</file>
     <file>images/info.png</file>
     <file>images/gcode.png</file>
+    <file>images/menu.png</file>
+    <file>images/dxf.png</file>
 </qresource>
 </RCC>

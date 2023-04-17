@@ -3,13 +3,14 @@ from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget, QPushButton
 import ezdxf
 from ezdxf.lldxf.const import DXFStructureError
-from qtpy.QtWidgets import QGroupBox, QStatusBar
+from qtpy.QtWidgets import QFormLayout, QGroupBox, QStatusBar
 from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
 import cutter.rc_images
 from cutter.recipe_combox import RecipeCombo
+import qtawesome as qta
 
 
 class MainWindow(QMainWindow):
@@ -21,17 +22,16 @@ class MainWindow(QMainWindow):
         self._init_layout()
         self._init_statusbar()
 
-        menu = self.menuBar()
-        select_doc_action = QAction("File", self)
-        select_doc_action.triggered.connect(self._select_doc)
-        menu.addAction(select_doc_action)
-
     def _init_toolbar(self):
         toolbar = QToolBar("My main toolbar")
         toolbar.setIconSize(QSize(32, 32))
         toolbar.setMovable(False)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.addToolBar(toolbar)
+
+        action_open_dxf = QAction(QIcon(QPixmap(":/images/dxf.png")), "打开文件", self)
+        action_open_dxf.triggered.connect(self._select_doc)
+        toolbar.addAction(action_open_dxf)
 
         action_start_machine = QAction(QIcon(QPixmap(":/images/start.png")), "启动机器", self)
         # action_start_machine.setIconText("start")
@@ -88,7 +88,11 @@ class MainWindow(QMainWindow):
 
         left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        left_layout.addWidget(self.recipe_combox)
+        recipe_layout = QFormLayout() 
+        recipe_icon = QLabel("选择配方")
+        recipe_icon.setPixmap(qta.icon("ei.th-list", color="#525960").pixmap(20, 20))
+        recipe_layout.addRow(recipe_icon, self.recipe_combox)
+        left_layout.addLayout(recipe_layout)
         left_layout.addWidget(self.entity_tree)
         left_layout.addWidget(machine_info_group)
         right_layout = QVBoxLayout()
@@ -166,4 +170,4 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.statusBar)
 
     def _unimplement(self):
-        QMessageBox.information(self, "Info", str("开发中"))
+        QMessageBox.warning(self, "Warning", "开发中")
