@@ -6,3 +6,5 @@ ROLE_NAMES = {
         "3": "OP"
         }
 SUPPORTED_ENTITY_TYPES = ["LINE", "ARC", "CIRCLE"]
+COLUMN_NAME_MAPPING = ["name", "dept", "role", "created_at"]
+

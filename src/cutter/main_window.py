@@ -12,6 +12,8 @@ import cutter.rc_images
 from cutter.recipe_combox import RecipeCombo
 import qtawesome as qta
 
+from cutter.users import UsersDialog
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -44,7 +46,7 @@ class MainWindow(QMainWindow):
         toolbar.addAction(action_open_recipe)
 
         action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
-        action_user_manage.triggered.connect(self._unimplement)
+        action_user_manage.triggered.connect(self._open_users_management)
         toolbar.addAction(action_user_manage)
 
         action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "JOY", self)
@@ -172,6 +174,11 @@ class MainWindow(QMainWindow):
 
     def _open_about_us(self):
         dlg = AboutUsDialog()
+        dlg.exec()
+
+    def _open_users_management(self):
+        dlg = UsersDialog()
+        dlg.resize(1000, 620)
         dlg.exec()
 
     def _init_statusbar(self):
