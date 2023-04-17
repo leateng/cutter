@@ -3,7 +3,7 @@ from PySide6.QtGui import QAction, QIcon, QPixmap
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget, QPushButton
 import ezdxf
 from ezdxf.lldxf.const import DXFStructureError
-from qtpy.QtWidgets import QFormLayout, QGroupBox, QStatusBar
+from qtpy.QtWidgets import QFormLayout, QGroupBox, QSpinBox, QStatusBar
 from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         self.dxf_entities = []
         self._init_toolbar()
         self._init_layout()
-        self._init_statusbar()
+        # self._init_statusbar()
 
     def _init_toolbar(self):
         toolbar = QToolBar("My main toolbar")
@@ -79,10 +79,20 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.main_splitter)
         self.recipe_combox = RecipeCombo()
         self.entity_tree = EntityTree()
+        self.tool_radius = QSpinBox()
+        self.cutter_offset = QSpinBox()
+        self.rotation_speed = QSpinBox()
 
-        machine_info_layout = QVBoxLayout()
-        machine_info_layout.addWidget(QLabel("坐标: X: 12 Y: 11 Z: 22"))
-        machine_info_layout.addWidget(QLabel("转速: 5000"))
+        machine_param_layout = QFormLayout()
+        machine_param_layout.addRow(QLabel("刀具半径"), self.tool_radius)
+        machine_param_layout.addRow(QLabel("偏移量"), self.cutter_offset)
+        machine_param_layout.addRow(QLabel("转速"), self.rotation_speed)
+        machine_param_group = QGroupBox("参数")
+        machine_param_group.setLayout(machine_param_layout)
+
+        machine_info_layout = QFormLayout()
+        machine_info_layout.addRow(QLabel("坐标"), QLabel("X: 12 Y: 11 Z: 22"))
+        machine_info_layout.addRow(QLabel("转速"), QLabel("5000"))
         machine_info_group = QGroupBox("机器信息")
         machine_info_group.setLayout(machine_info_layout)
 
@@ -94,6 +104,7 @@ class MainWindow(QMainWindow):
         recipe_layout.addRow(recipe_icon, self.recipe_combox)
         left_layout.addLayout(recipe_layout)
         left_layout.addWidget(self.entity_tree)
+        left_layout.addWidget(machine_param_group)
         left_layout.addWidget(machine_info_group)
         right_layout = QVBoxLayout()
         right_layout.addWidget(self.view)
