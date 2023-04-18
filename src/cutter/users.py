@@ -1,15 +1,17 @@
 from typing import Any, Optional, Union
 from datetime import datetime
-import PySide6.QtCore
-import PySide6.QtWidgets
-from PySide6.QtCore import QModelIndex, Qt, QAbstractTableModel, Slot
-from PySide6.QtGui import QBrush, QColor
-from PySide6.QtWidgets import QAbstractItemView, QApplication, QDialog, QHBoxLayout, QHeaderView, QMessageBox, QPushButton, QTableView, QVBoxLayout
+import qtpy
+import qtpy.QtCore
+import qtpy.QtWidgets
+from qtpy.QtCore import QModelIndex, Qt, QAbstractTableModel, Slot
+from qtpy.QtGui import QBrush, QColor
+from qtpy.QtWidgets import QAbstractItemView, QApplication, QDialog, QHBoxLayout, QHeaderView, QMessageBox, QPushButton, QTableView, QVBoxLayout
+from qtpy.QtGui import QIcon, QPixmap
 from cutter.consts import COLUMN_NAME_MAPPING, ROLE_NAMES
 
 class UserModel(QAbstractTableModel):
 
-    def __init__(self, parent: Optional[PySide6.QtCore.QObject] = None) -> None:
+    def __init__(self, parent: Optional[qtpy.QtCore.QObject] = None) -> None:
         super().__init__(parent)
         self.rawData = [
                 {"name": "liteng", "dept": "QA", "role": 1, "created_at": datetime.now() },
@@ -17,27 +19,27 @@ class UserModel(QAbstractTableModel):
                 {"name": "Sam", "dept": "DEV", "role": 3, "created_at": datetime.now() },
                 ]
 
-    def headerData(self, section: int, orientation: PySide6.QtCore.Qt.Orientation, role: int = 0)-> Any:
+    def headerData(self, section: int, orientation: qtpy.QtCore.Qt.Orientation, role: int = 0)-> Any:
         if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
             return ["姓名", "部门", "角色", "创建时间"][section]
 
         return super().headerData(section, orientation, role)
 
 
-    def rowCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = None) -> int:
+    def rowCount(self, parent: Union[qtpy.QtCore.QModelIndex, qtpy.QtCore.QPersistentModelIndex] = None) -> int:
         return len(self.rawData)
 
-    def columnCount(self, parent: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex] = None ) -> int:
+    def columnCount(self, parent: Union[qtpy.QtCore.QModelIndex, qtpy.QtCore.QPersistentModelIndex] = None ) -> int:
         return 4
 
-    def sort(self, column: int, order: PySide6.QtCore.Qt.SortOrder = ...) -> None:
+    def sort(self, column: int, order: qtpy.QtCore.Qt.SortOrder = ...) -> None:
         print(f"sort column: {column} order: {order}")
         return super().sort(column, order)
 
     # def flags(self, index):
     #     return Qt.ItemFlag.ItemIsEditable | super().flags(index)
 
-    def data(self, index: Union[PySide6.QtCore.QModelIndex, PySide6.QtCore.QPersistentModelIndex], role: int = 0) -> Any:
+    def data(self, index: Union[qtpy.QtCore.QModelIndex, qtpy.QtCore.QPersistentModelIndex], role: int = 0) -> Any:
         if role == Qt.ItemDataRole.DisplayRole:
             row = index.row()
             column = index.column()
@@ -68,7 +70,7 @@ class UserModel(QAbstractTableModel):
 
 
 class UsersGridView(QTableView):
-    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
@@ -90,8 +92,11 @@ class UsersGridView(QTableView):
         print("edit user")
 
 class UsersDialog(QDialog):
-    def __init__(self, parent: Optional[PySide6.QtWidgets.QWidget] = None) -> None:
+    def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
+
+        self.setWindowIcon(QIcon(QPixmap(":/images/user1.png")))
+        self.setWindowTitle("用户管理")
 
         self.usersModel = UserModel()
         self.usersView = UsersGridView()

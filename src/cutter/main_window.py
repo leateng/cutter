@@ -1,17 +1,17 @@
-from PySide6.QtCore import QSize, Qt
-from PySide6.QtGui import QAction, QIcon, QPixmap
-from PySide6.QtWidgets import QHBoxLayout, QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget, QPushButton
+from qtpy.QtCore import QSize, Qt
+from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtWidgets import QFormLayout, QGroupBox, QSpinBox, QStatusBar, QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget, QPushButton, QAction
 import ezdxf
+import qtawesome as qta
 from ezdxf.lldxf.const import DXFStructureError
-from qtpy.QtWidgets import QFormLayout, QGroupBox, QSpinBox, QStatusBar
+
+import cutter.rc_images
 from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
-import cutter.rc_images
+from cutter.joy import JoyDialog
 from cutter.recipe_combox import RecipeCombo
-import qtawesome as qta
-
 from cutter.users import UsersDialog
 
 
@@ -22,6 +22,7 @@ class MainWindow(QMainWindow):
         self.dxf_entities = []
         self._init_toolbar()
         self._init_layout()
+        self.setWindowIcon(QIcon(QPixmap(":/images/cutter.png")))
         # self._init_statusbar()
 
     def _init_toolbar(self):
@@ -50,7 +51,7 @@ class MainWindow(QMainWindow):
         toolbar.addAction(action_user_manage)
 
         action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "JOY", self)
-        action_controller.triggered.connect(self._unimplement)
+        action_controller.triggered.connect(self._open_joy)
         toolbar.addAction(action_controller)
 
         generate_gcode = QAction(QIcon(QPixmap(":/images/gcode.png")), "生成GCODE", self)
@@ -178,6 +179,11 @@ class MainWindow(QMainWindow):
 
     def _open_users_management(self):
         dlg = UsersDialog()
+        dlg.resize(1000, 620)
+        dlg.exec()
+
+    def _open_joy(self):
+        dlg = JoyDialog()
         dlg.resize(1000, 620)
         dlg.exec()
 

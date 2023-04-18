@@ -1,6 +1,6 @@
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QPushButton
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QPixmap
+from qtpy.QtWidgets import QDialog, QFormLayout, QVBoxLayout, QLabel, QPushButton
 import qtawesome as qta
 from cutter.consts import VERSION
 

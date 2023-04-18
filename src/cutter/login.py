@@ -1,7 +1,7 @@
 import sys
-from PySide6.QtCore import Slot, Qt
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QSpacerItem, QVBoxLayout, QHBoxLayout, QFormLayout
+from qtpy.QtCore import Slot, Qt
+from qtpy.QtGui import QPixmap
+from qtpy.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QSpacerItem, QVBoxLayout, QHBoxLayout, QFormLayout
 import cutter.rc_images
 
 class LoginDialog(QDialog):

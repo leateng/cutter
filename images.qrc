@@ -12,5 +12,6 @@
     <file>images/gcode.png</file>
     <file>images/menu.png</file>
     <file>images/dxf.png</file>
+    <file>images/cutter.png</file>
 </qresource>
 </RCC>

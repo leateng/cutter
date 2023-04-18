@@ -1,9 +1,9 @@
 import sys
 import math
 import ezdxf
-from PySide6.QtWidgets import QFileDialog, QFrame, QGraphicsView, QGraphicsScene, QApplication, QMainWindow, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsPathItem
-from PySide6.QtGui import QPen, QColor, QPainterPath, QPainter, QTransform, QWheelEvent, QBrush, QPolygonF, QAction
-from PySide6.QtCore import Qt, QRectF, QPointF
+from qtpy.QtWidgets import QAction, QFileDialog, QFrame, QGraphicsView, QGraphicsScene, QApplication, QMainWindow, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsPathItem
+from qtpy.QtGui import QPen, QColor, QPainterPath, QPainter, QTransform, QWheelEvent, QBrush, QPolygonF
+from qtpy.QtCore import Qt, QRectF, QPointF
 # from IPython import embed
 from ezdxf.lldxf.const import LWPOLYLINE_CLOSED
 

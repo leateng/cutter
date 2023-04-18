@@ -1,5 +1,5 @@
-from PySide6.QtWidgets import QApplication, QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QCheckBox
-from PySide6.QtCore import Qt
+from qtpy.QtWidgets import QApplication, QWidget, QVBoxLayout, QTreeWidget, QTreeWidgetItem, QCheckBox
+from qtpy.QtCore import Qt
 import itertools
 import ezdxf
 # from IPython import embed

@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QComboBox
+from qtpy.QtWidgets import QComboBox
 
 class RecipeCombo(QComboBox):
     def __init__(self):
