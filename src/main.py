@@ -4,12 +4,16 @@ import os
 os.environ['QT_API'] = 'pyside2'
 # from PySide6.QtWidgets import QApplication
 from qtpy.QtWidgets import QApplication, QDialog
+from qtpy.QtGui import QFontDatabase, QFont
 from cutter.login import LoginDialog
 from cutter.main_window import MainWindow
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    print(f"app={type(app)}")
+
+    # 设置默认字体
+    font = QFont('Sans', 9)
+    app.setFont(font)
     
     # for debug
     # win = MainWindow()

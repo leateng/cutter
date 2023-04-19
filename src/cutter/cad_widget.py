@@ -1,5 +1,6 @@
 import sys
 import math
+from IPython import embed
 import ezdxf
 from qtpy.QtWidgets import QAction, QFileDialog, QFrame, QGraphicsView, QGraphicsScene, QApplication, QMainWindow, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsPathItem
 from qtpy.QtGui import QPen, QColor, QPainterPath, QPainter, QTransform, QWheelEvent, QBrush, QPolygonF
@@ -127,15 +128,32 @@ class DxfEntityScence(QGraphicsScene):
             minor_axis = entity.minor_axis
             item = QGraphicsEllipseItem(center.x - major_axis.x , center.y - minor_axis.y, major_axis.x*2, minor_axis.y*2)
         elif entity.dxftype() == 'ARC':
+            # center = entity.dxf.center
+            # radius = entity.dxf.radius
+            # item = QGraphicsEllipseItem(center.x - radius, center.y - radius, radius * 2, radius * 2)
+            # start_angle = -entity.dxf.end_angle
+            # end_angle = -entity.dxf.start_angle
+            # if end_angle < start_angle:
+            #     end_angle = (end_angle+360)
+            # item.setStartAngle(start_angle*16)
+            # item.setSpanAngle(end_angle*16 - start_angle*16)
+
             center = entity.dxf.center
             radius = entity.dxf.radius
-            item = QGraphicsEllipseItem(center.x - radius, center.y - radius, radius * 2, radius * 2)
             start_angle = -entity.dxf.end_angle
             end_angle = -entity.dxf.start_angle
             if end_angle < start_angle:
                 end_angle = (end_angle+360)
-            item.setStartAngle(start_angle*16)
-            item.setSpanAngle(end_angle*16 - start_angle*16)
+            # embed()
+
+            # 创建圆弧路径
+            path = QPainterPath()
+            x, y, _ = entity.end_point
+            path.moveTo(x, y)
+            path.arcTo(center.x - radius, center.y - radius, radius * 2, radius * 2, start_angle, (end_angle-start_angle))
+            # 创建 QGraphicsPathItem，并设置路径
+            item = QGraphicsPathItem()
+            item.setPath(path)
         elif entity.dxftype() == 'LWPOLYLINE':
             path = QPainterPath()
             # embed()
