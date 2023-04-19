@@ -1,6 +1,5 @@
 import sys
 import math
-from IPython import embed
 import ezdxf
 from qtpy.QtWidgets import QAction, QFileDialog, QFrame, QGraphicsView, QGraphicsScene, QApplication, QMainWindow, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsPathItem
 from qtpy.QtGui import QPen, QColor, QPainterPath, QPainter, QTransform, QWheelEvent, QBrush, QPolygonF
