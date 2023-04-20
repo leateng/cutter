@@ -1,12 +1,16 @@
-import ezdxf
 import sys
+
+import ezdxf
 from ezdxf.document import Drawing
+
 # from ezdxf.groupby import groupby
 # from IPython import embed
 
+
 def print_layers_name(doc):
     for l in doc.layers:
-        print(l.dxfattribs()['name'])
+        print(l.dxfattribs()["name"])
+
 
 def print_entity_by_layer(doc: Drawing, name: str = ""):
     msp = doc.modelspace()
@@ -17,6 +21,7 @@ def print_entity_by_layer(doc: Drawing, name: str = ""):
             embed()
             for e in entities:
                 print(f"  entity=#{e}")
+
 
 def print_entities(doc: Drawing):
     msp = doc.modelspace()
@@ -42,4 +47,3 @@ msp = doc.modelspace()
 print_entity_by_layer(doc)
 # print_entities(doc)
 # embed()
-

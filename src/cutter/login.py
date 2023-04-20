@@ -1,8 +1,16 @@
-import sys
-from qtpy.QtCore import Slot, Qt
-from qtpy.QtGui import QPixmap
-from qtpy.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QSpacerItem, QVBoxLayout, QHBoxLayout, QFormLayout
 import cutter.rc_images
+from qtpy.QtCore import Qt
+from qtpy.QtCore import Slot
+from qtpy.QtGui import QPixmap
+from qtpy.QtWidgets import QDialog
+from qtpy.QtWidgets import QFormLayout
+from qtpy.QtWidgets import QHBoxLayout
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSpacerItem
+from qtpy.QtWidgets import QVBoxLayout
+
 
 class LoginDialog(QDialog):
     def __init__(self):
@@ -22,10 +30,10 @@ class LoginDialog(QDialog):
         # 创建密码标签、文本框
         self.password_label = QLabel("密码:")
         self.password_edit = QLineEdit()
-        self.password_edit.setEchoMode(QLineEdit.Password) # 输入时显示为*
+        self.password_edit.setEchoMode(QLineEdit.Password)  # 输入时显示为*
 
         # 创建登录按钮
-        self.login_button = QPushButton("登录")        # 创建取消按钮和布局
+        self.login_button = QPushButton("登录")  # 创建取消按钮和布局
         self.cancel_button = QPushButton("取消")
         self.button_layout = QHBoxLayout()
         self.button_layout.addStretch(1)
@@ -61,8 +69,10 @@ class LoginDialog(QDialog):
 
         # 此处应调用验证函数，这里只做简单的模拟
         if username == "root" and password == "root":
-            self.accept() # 验证成功，关闭对话框
+            self.accept()  # 验证成功，关闭对话框
         else:
-            self.password_edit.clear() # 清空密码文本框
+            self.password_edit.clear()  # 清空密码文本框
             self.password_edit.setPlaceholderText("用户名或密码错误")
-            self.password_edit.setStyleSheet("QLineEdit { background-color: #FFCCCC; }") # 将密码文本框的背景色设置为红色
+            self.password_edit.setStyleSheet(
+                "QLineEdit { background-color: #FFCCCC; }"
+            )  # 将密码文本框的背景色设置为红色
