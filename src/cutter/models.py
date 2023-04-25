@@ -1,5 +1,13 @@
 class User:
-    def __init__(self, id, name, password, role_id, department, created_at) -> None:
+    def __init__(
+        self,
+        id=None,
+        name=None,
+        password=None,
+        role_id=None,
+        department=None,
+        created_at=None,
+    ) -> None:
         self._id = id
         self._name = name
         self._password = password

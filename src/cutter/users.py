@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Any
 from typing import Optional
 from typing import Union
@@ -7,7 +6,10 @@ import qtpy.QtCore
 import qtpy.QtWidgets
 from cutter.consts import COLUMN_NAME_MAPPING
 from cutter.consts import ROLE_NAMES
+from cutter.database import DB_CONN
 from cutter.database import get_users
+from cutter.models import User
+from cutter.role_combox import RoleCombox
 from qtpy.QtCore import QAbstractTableModel
 from qtpy.QtCore import QModelIndex
 from qtpy.QtCore import Qt
@@ -16,14 +18,20 @@ from qtpy.QtGui import QBrush
 from qtpy.QtGui import QColor
 from qtpy.QtGui import QIcon
 from qtpy.QtGui import QPixmap
+from qtpy.QtSql import QSqlQuery
 from qtpy.QtWidgets import QAbstractItemView
 from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QComboBox
 from qtpy.QtWidgets import QDialog
+from qtpy.QtWidgets import QFormLayout
 from qtpy.QtWidgets import QHBoxLayout
 from qtpy.QtWidgets import QHeaderView
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QLineEdit
 from qtpy.QtWidgets import QMessageBox
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QTableView
+from qtpy.QtWidgets import QTextEdit
 from qtpy.QtWidgets import QVBoxLayout
 
 
@@ -31,26 +39,6 @@ class UserModel(QAbstractTableModel):
     def __init__(self, parent: Optional[qtpy.QtCore.QObject] = None) -> None:
         super().__init__(parent)
         self.rawData = get_users()
-        # self.rawData = [
-        #     {
-        #         "name": "liteng",
-        #         "department": "QA",
-        #         "role": 1,
-        #         "created_at": datetime.now(),
-        #     },
-        #     {
-        #         "name": "Jim",
-        #         "department": "DEV",
-        #         "role": 2,
-        #         "created_at": datetime.now(),
-        #     },
-        #     {
-        #         "name": "Sam",
-        #         "department": "DEV",
-        #         "role": 3,
-        #         "created_at": datetime.now(),
-        #     },
-        # ]
 
     def headerData(
         self, section: int, orientation: qtpy.QtCore.Qt.Orientation, role: int = 0
@@ -142,6 +130,47 @@ class UsersGridView(QTableView):
         print("edit user")
 
 
+class UserFormDialog(QDialog):
+    def __init__(
+        self,
+        parent: Optional[qtpy.QtWidgets.QWidget] = None,
+        user: Optional[User] = None,
+    ) -> None:
+        super().__init__(parent)
+        self._name_edit = QLineEdit()
+        self._department_edit = QLineEdit()
+        self._password_edit = QLineEdit()
+        self._password_edit.setEchoMode(QLineEdit.Password)  # 输入时显示为*
+        self._password_confirmation_edit = QLineEdit()
+        self._password_confirmation_edit.setEchoMode(QLineEdit.Password)  # 输入时显示为*
+        self._role_combox = RoleCombox()
+        self.ok_button = QPushButton("确定")
+        self.cancel_button = QPushButton("取消")
+
+        form_layout = QFormLayout()
+        form_layout.addRow(QLabel("用户名"), self._name_edit)
+        form_layout.addRow(QLabel("密码"), self._password_edit)
+        form_layout.addRow(QLabel("确认密码"), self._password_confirmation_edit)
+        form_layout.addRow(QLabel("部门"), self._department_edit)
+        form_layout.addRow(QLabel("角色"), self._role_combox)
+
+        # 创建登录按钮
+        button_layout = QHBoxLayout()
+        button_layout.addStretch(1)
+        button_layout.addWidget(self.ok_button)
+        button_layout.addWidget(self.cancel_button)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addLayout(form_layout)
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
+        self.setFixedSize(400, 220)
+        self.setWindowTitle("添加用户")
+
+    def init_value(self):
+        pass
+
+
 class UsersDialog(QDialog):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
@@ -181,15 +210,31 @@ class UsersDialog(QDialog):
             msg.exec()
         else:
             index = indexes[0]
+            self.clearFocus()
             print(f"delete row {index.row()}")
 
     def addUser(self):
-        self.usersModel.addUser(
-            {
-                "name": "liteng",
-                "department": "QA",
-                "role": 1,
-                "created_at": datetime.now(),
-            }
-        )
-        self.usersModel.layoutChanged.emit()
+        user = User()
+        dlg = UserFormDialog(self, user)
+        dlg.exec_()
+        # self.usersModel.addUser(
+        #     {
+        #         "name": "liteng",
+        #         "department": "QA",
+        #         "role": 1,
+        #         "created_at": datetime.now(),
+        #     }
+        # )
+        #
+        # query = QSqlQuery(DB_CONN)
+        # query.prepare(
+        #     "INSERT INTO users (username, password) VALUES (:username, :password)"
+        # )
+        # query.bindValue(":username", "example_user")
+        # query.bindValue(":password", "example_password")
+        #
+        # if query.exec():
+        #     print("插入成功！")
+        # else:
+        #     print("插入失败：", query.lastError().text())
+        # self.usersModel.layoutChanged.emit()

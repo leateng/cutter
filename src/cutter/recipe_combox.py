@@ -1,5 +1,6 @@
 from qtpy.QtWidgets import QComboBox
 
+
 class RecipeCombo(QComboBox):
     def __init__(self):
         super().__init__()
