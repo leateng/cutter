@@ -1,6 +1,7 @@
 import os
 import sys
 
+from cutter.database import init_db
 from cutter.login import LoginDialog
 from cutter.main_window import MainWindow
 from qtpy.QtGui import QFont
@@ -21,6 +22,8 @@ if __name__ == "__main__":
     # print("main_window")
     # win.show()
     # app.exec_()
+
+    init_db()
 
     login_dialog = LoginDialog()
     if login_dialog.exec() == QDialog.DialogCode.Accepted:

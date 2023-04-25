@@ -1,4 +1,6 @@
+import cutter.consts as g
 import cutter.rc_images
+from cutter.database import validate_login
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Slot
 from qtpy.QtGui import QPixmap
@@ -68,7 +70,8 @@ class LoginDialog(QDialog):
         password = self.password_edit.text()
 
         # 此处应调用验证函数，这里只做简单的模拟
-        if username == "root" and password == "root":
+        g.CURRENT_USER = validate_login(username, password)
+        if g.CURRENT_USER is not None:
             self.accept()  # 验证成功，关闭对话框
         else:
             self.password_edit.clear()  # 清空密码文本框
