@@ -1,14 +1,34 @@
-import sys
 import math
+
 import ezdxf
-from qtpy.QtWidgets import QAction, QFileDialog, QFrame, QGraphicsView, QGraphicsScene, QApplication, QMainWindow, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsPathItem
-from qtpy.QtGui import QPen, QColor, QPainterPath, QPainter, QTransform, QWheelEvent, QBrush, QPolygonF
-from qtpy.QtCore import Qt, QRectF, QPointF
-# from IPython import embed
 from ezdxf.lldxf.const import LWPOLYLINE_CLOSED
+from qtpy.QtCore import QPointF
+from qtpy.QtCore import QRectF
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QBrush
+from qtpy.QtGui import QColor
+from qtpy.QtGui import QPainter
+from qtpy.QtGui import QPainterPath
+from qtpy.QtGui import QPen
+from qtpy.QtGui import QPolygonF
+from qtpy.QtGui import QTransform
+from qtpy.QtGui import QWheelEvent
+from qtpy.QtWidgets import QAction
+from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QFileDialog
+from qtpy.QtWidgets import QFrame
+from qtpy.QtWidgets import QGraphicsEllipseItem
+from qtpy.QtWidgets import QGraphicsItem
+from qtpy.QtWidgets import QGraphicsLineItem
+from qtpy.QtWidgets import QGraphicsPathItem
+from qtpy.QtWidgets import QGraphicsScene
+from qtpy.QtWidgets import QGraphicsView
+from qtpy.QtWidgets import QMainWindow
+
 
 def _get_x_scale(t: QTransform) -> float:
     return math.sqrt(t.m11() * t.m11() + t.m21() * t.m21())
+
 
 class CADGraphicsView(QGraphicsView):
     def __init__(
@@ -33,7 +53,11 @@ class CADGraphicsView(QGraphicsView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
         self.setFrameShape(QFrame.Shape.NoFrame)
-        self.setRenderHints( QPainter.RenderHint.Antialiasing | QPainter.RenderHint.TextAntialiasing | QPainter.RenderHint.SmoothPixmapTransform)
+        self.setRenderHints(
+            QPainter.RenderHint.Antialiasing
+            | QPainter.RenderHint.TextAntialiasing
+            | QPainter.RenderHint.SmoothPixmapTransform
+        )
         self.scale(1, -1)  # so that +y is up
 
     def clear(self):
@@ -94,7 +118,7 @@ class CADGraphicsView(QGraphicsView):
 
 
 class DxfEntityScence(QGraphicsScene):
-    def __init__(self, entities): 
+    def __init__(self, entities):
         super().__init__()
         self.setBackgroundBrush(QColor(33, 40, 48))
         self.entities = entities
@@ -113,20 +137,27 @@ class DxfEntityScence(QGraphicsScene):
 
     def create_qgraphicsitem_from_entity(self, entity):
         item = None
-        if entity.dxftype() == 'LINE':
+        if entity.dxftype() == "LINE":
             start = entity.dxf.start
             end = entity.dxf.end
             item = QGraphicsLineItem(start.x, start.y, end.x, end.y)
-        elif entity.dxftype() == 'CIRCLE':
+        elif entity.dxftype() == "CIRCLE":
             center = entity.dxf.center
             radius = entity.dxf.radius
-            item = QGraphicsEllipseItem(center.x - radius, center.y - radius, radius * 2, radius * 2)
-        elif entity.dxftype() == 'ELLIPSE':
+            item = QGraphicsEllipseItem(
+                center.x - radius, center.y - radius, radius * 2, radius * 2
+            )
+        elif entity.dxftype() == "ELLIPSE":
             center = entity.dxf.center
             major_axis = entity.dxf.major_axis
             minor_axis = entity.minor_axis
-            item = QGraphicsEllipseItem(center.x - major_axis.x , center.y - minor_axis.y, major_axis.x*2, minor_axis.y*2)
-        elif entity.dxftype() == 'ARC':
+            item = QGraphicsEllipseItem(
+                center.x - major_axis.x,
+                center.y - minor_axis.y,
+                major_axis.x * 2,
+                minor_axis.y * 2,
+            )
+        elif entity.dxftype() == "ARC":
             # center = entity.dxf.center
             # radius = entity.dxf.radius
             # item = QGraphicsEllipseItem(center.x - radius, center.y - radius, radius * 2, radius * 2)
@@ -142,18 +173,25 @@ class DxfEntityScence(QGraphicsScene):
             start_angle = -entity.dxf.end_angle
             end_angle = -entity.dxf.start_angle
             if end_angle < start_angle:
-                end_angle = (end_angle+360)
+                end_angle = end_angle + 360
             # embed()
 
             # 创建圆弧路径
             path = QPainterPath()
             x, y, _ = entity.end_point
             path.moveTo(x, y)
-            path.arcTo(center.x - radius, center.y - radius, radius * 2, radius * 2, start_angle, (end_angle-start_angle))
+            path.arcTo(
+                center.x - radius,
+                center.y - radius,
+                radius * 2,
+                radius * 2,
+                start_angle,
+                (end_angle - start_angle),
+            )
             # 创建 QGraphicsPathItem，并设置路径
             item = QGraphicsPathItem()
             item.setPath(path)
-        elif entity.dxftype() == 'LWPOLYLINE':
+        elif entity.dxftype() == "LWPOLYLINE":
             path = QPainterPath()
             # embed()
             first_vertex = entity[0]
@@ -171,13 +209,13 @@ class DxfEntityScence(QGraphicsScene):
         return item
 
     def draw_coordinate_axis(self, axis_len: float = 10) -> None:
-        x_color = QColor(255, 0, 0, 100) # Qt.GlobalColor.green
-        y_color = QColor(0, 255, 0, 100) # Qt.GlobalColor.red
+        x_color = QColor(255, 0, 0, 100)  # Qt.GlobalColor.green
+        y_color = QColor(0, 255, 0, 100)  # Qt.GlobalColor.red
 
         brush = QBrush(x_color)
         pen = QPen(x_color)
         pen.setCosmetic(True)
-    
+
         right_arrow = QPolygonF()
         right_arrow.append(QPointF(0, 1))
         right_arrow.append(QPointF(2, 0))
@@ -197,4 +235,3 @@ class DxfEntityScence(QGraphicsScene):
         brush.setColor(y_color)
         self.addLine(0, 0, 0, axis_len, pen)
         self.addPolygon(up_arrow, pen, brush)
-

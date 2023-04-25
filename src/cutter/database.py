@@ -21,7 +21,7 @@ def init_db():
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               name VARCHAR,
               password VARCHAR,
-              role_id INTEGER,
+              role INTEGER,
               department VARCHAR,
               created_at TIMESTAMP
             )
@@ -31,7 +31,7 @@ def init_db():
 
         query.prepare(
             """
-            INSERT INTO users (name, role_id, password, created_at)
+            INSERT INTO users (name, role, password, created_at)
             VALUES(?, ?, ?, ?)
             """
         )
@@ -44,7 +44,7 @@ def init_db():
 
 
 def validate_login(name, password):
-    query = QSqlQuery()
+    query = QSqlQuery(DB_CONN)
     query.prepare("SELECT * FROM users WHERE name = :name and password = :password")
     query.bindValue(":name", name)
     query.bindValue(":password", password)
@@ -57,9 +57,31 @@ def validate_login(name, password):
     else:
         id = query.value("id")
         name = query.value("name")
-        role_id = query.value("role_id")
+        role = query.value("role")
         department = query.value("department")
         created_at = query.value("created_at")
         print("find login user: ", name)
 
-        return User(id, name, password, role_id, department, created_at)
+        return User(id, name, password, role, department, created_at)
+
+
+def get_users():
+    users = []
+    query = QSqlQuery(DB_CONN)
+    query.prepare("SELECT * FROM users WHERE 1=1 order by name asc")
+    if not query.exec_():
+        print("sql error:", query.lastError().text())
+    else:
+        while query.next():
+            u = {
+                "id": query.value("id"),
+                "name": query.value("name"),
+                "department": query.value("department"),
+                "role": query.value("role"),
+                "created_at": query.value("created_at"),
+            }
+            users.append(u)
+
+    print(f"get_users={users}")
+
+    return users
