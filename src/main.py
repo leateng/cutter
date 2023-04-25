@@ -1,6 +1,7 @@
 import os
 import sys
 
+import cutter.consts as g
 from cutter.database import init_db
 from cutter.login import LoginDialog
 from cutter.main_window import MainWindow
@@ -30,6 +31,7 @@ if __name__ == "__main__":
         # 验证成功，启动程序
         print("Successful login")
         win = MainWindow()
+        win.setWindowTitle(f"Cutter-{g.CURRENT_USER.get_name()}")
         win.show()
         app.exec_()
     else:

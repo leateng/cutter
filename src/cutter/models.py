@@ -6,3 +6,6 @@ class User:
         self._role_id = role_id
         self._department = department
         self._created_at = created_at
+
+    def get_name(self):
+        return self._name
