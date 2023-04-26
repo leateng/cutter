@@ -31,7 +31,7 @@ if __name__ == "__main__":
         # 验证成功，启动程序
         print("Successful login")
         win = MainWindow()
-        win.setWindowTitle(f"Cutter-{g.CURRENT_USER.get_name()}")
+        win.setWindowTitle(f"Cutter-{g.CURRENT_USER._name}")
         win.show()
         app.exec_()
     else:

@@ -13,6 +13,7 @@ from cutter.role_combox import RoleCombox
 from qtpy.QtCore import QAbstractTableModel
 from qtpy.QtCore import QModelIndex
 from qtpy.QtCore import Qt
+from qtpy.QtCore import Signal
 from qtpy.QtCore import Slot
 from qtpy.QtGui import QBrush
 from qtpy.QtGui import QColor
@@ -84,7 +85,7 @@ class UserModel(QAbstractTableModel):
             column = index.column()
             column_name = self.columnIndexToRowName(column)
             data = self.rawData[row][column_name]
-            print(f"Row{row}, Column{column}, column_name: {column_name}, data={data}")
+            # print(f"Row{row}, Column{column}, column_name: {column_name}, data={data}")
 
             if column_name == "role":
                 return ROLE_NAMES[str(data)]
@@ -131,21 +132,24 @@ class UsersGridView(QTableView):
 
 
 class UserFormDialog(QDialog):
+    saveUser = Signal(User)
+
     def __init__(
-        self,
-        parent: Optional[qtpy.QtWidgets.QWidget] = None,
-        user: Optional[User] = None,
+        self, user: Optional[User], parent: Optional[qtpy.QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
+        self.user = user
         self._name_edit = QLineEdit()
         self._department_edit = QLineEdit()
         self._password_edit = QLineEdit()
-        self._password_edit.setEchoMode(QLineEdit.Password)  # 输入时显示为*
+        self._password_edit.setEchoMode(QLineEdit.Password)
         self._password_confirmation_edit = QLineEdit()
-        self._password_confirmation_edit.setEchoMode(QLineEdit.Password)  # 输入时显示为*
+        self._password_confirmation_edit.setEchoMode(QLineEdit.Password)
         self._role_combox = RoleCombox()
         self.ok_button = QPushButton("确定")
         self.cancel_button = QPushButton("取消")
+        self.ok_button.clicked.connect(self.accept)
+        self.cancel_button.clicked.connect(self.reject)
 
         form_layout = QFormLayout()
         form_layout.addRow(QLabel("用户名"), self._name_edit)
@@ -167,8 +171,19 @@ class UserFormDialog(QDialog):
         self.setFixedSize(400, 220)
         self.setWindowTitle("添加用户")
 
-    def init_value(self):
+    def set_form_values(self):
         pass
+
+    def get_form_values(self):
+        self.user._name = self._name_edit.text()
+        self.user._password = self._password_edit.text()
+        self.user._department = self._department_edit.text()
+        self.user._role_id = self._role_combox.currentData()
+
+    def accept(self):
+        self.get_form_values()
+        self.saveUser.emit(self.user)
+        super().accept()
 
 
 class UsersDialog(QDialog):
@@ -215,26 +230,32 @@ class UsersDialog(QDialog):
 
     def addUser(self):
         user = User()
-        dlg = UserFormDialog(self, user)
+        dlg = UserFormDialog(user, self)
+        dlg.saveUser.connect(self.receiveUserData)
         dlg.exec_()
-        # self.usersModel.addUser(
-        #     {
-        #         "name": "liteng",
-        #         "department": "QA",
-        #         "role": 1,
-        #         "created_at": datetime.now(),
-        #     }
-        # )
-        #
-        # query = QSqlQuery(DB_CONN)
-        # query.prepare(
-        #     "INSERT INTO users (username, password) VALUES (:username, :password)"
-        # )
-        # query.bindValue(":username", "example_user")
-        # query.bindValue(":password", "example_password")
-        #
-        # if query.exec():
-        #     print("插入成功！")
-        # else:
-        #     print("插入失败：", query.lastError().text())
-        # self.usersModel.layoutChanged.emit()
+
+    def receiveUserData(self, user: User):
+        print("received user data")
+        print(f"user={user}")
+
+    # self.usersModel.addUser(
+    #     {
+    #         "name": "liteng",
+    #         "department": "QA",
+    #         "role": 1,
+    #         "created_at": datetime.now(),
+    #     }
+    # )
+    #
+    # query = QSqlQuery(DB_CONN)
+    # query.prepare(
+    #     "INSERT INTO users (username, password) VALUES (:username, :password)"
+    # )
+    # query.bindValue(":username", "example_user")
+    # query.bindValue(":password", "example_password")
+    #
+    # if query.exec():
+    #     print("插入成功！")
+    # else:
+    #     print("插入失败：", query.lastError().text())
+    # self.usersModel.layoutChanged.emit()
