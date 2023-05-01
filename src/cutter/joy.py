@@ -38,7 +38,7 @@ class JoyPad(QWidget):
             }
                            """)
 
-        self.button_up      = QPushButton(qta.icon("ei.caret-up", color="#525960"), "")
+        self.button_up      = QPushButton(qta.icon("ei.caret-up", color="#525960").pixmap(100, 100), "")
         self.button_down    = QPushButton(qta.icon("ei.caret-down", color="#525960").pixmap(100, 100), "")
         self.button_left    = QPushButton(qta.icon("ei.caret-left", color="#525960").pixmap(50, 50), "")
         self.button_right   = QPushButton(qta.icon("ei.caret-right", color="#525960").pixmap(50, 50), "")

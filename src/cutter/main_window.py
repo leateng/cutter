@@ -13,6 +13,8 @@ from cutter.entity_tree import EntityTree
 from cutter.joy import JoyDialog
 from cutter.recipe_combox import RecipeCombo
 from cutter.users import UsersDialog
+from cutter.plc import PLC_CONN
+import pyads
 
 
 class MainWindow(QMainWindow):
@@ -39,7 +41,7 @@ class MainWindow(QMainWindow):
         action_start_machine = QAction(QIcon(QPixmap(":/images/start.png")), "启动机器", self)
         # action_start_machine.setIconText("start")
         # action_start_machine.setStatusTip("This is your button")
-        action_start_machine.triggered.connect(self._unimplement)
+        action_start_machine.triggered.connect(self._start_machine)
         toolbar.addAction(action_start_machine)
 
         action_open_recipe = QAction(QIcon(QPixmap(":/images/folder.png")), "配方管理", self)
@@ -94,6 +96,8 @@ class MainWindow(QMainWindow):
         machine_param_group.setLayout(machine_param_layout)
 
         machine_info_layout = QFormLayout()
+        plc_status = "已连接"  if PLC_CONN.is_open else "断开"
+        machine_info_layout.addRow(QLabel("连接状态"), QLabel(plc_status))
         machine_info_layout.addRow(QLabel("坐标"), QLabel("X: 12 Y: 11 Z: 22"))
         machine_info_layout.addRow(QLabel("转速"), QLabel("5000"))
         machine_info_group = QGroupBox("机器信息")
@@ -192,6 +196,18 @@ class MainWindow(QMainWindow):
         self.b = QPushButton("click here")
         self.statusBar.addWidget(QLabel("x: 1, y:2 z: 3"))
         self.setStatusBar(self.statusBar)
+
+    def _start_machine(self):
+        if PLC_CONN.is_open:
+            strGFileName = PLC_CONN.write_by_name('GVL_HMI.strGFileName', 'gb2.nc', pyads.PLCTYPE_STRING)
+            bExecuteGCode = PLC_CONN.write_by_name('GVL_HMI.bExecuteGCode', True, pyads.PLCTYPE_BOOL)
+            current_status = PLC_CONN.read_by_name('GVL_HMI.diCrtStatus', pyads.PLCTYPE_INT)
+            print(f"strGFileName = {strGFileName}")
+            print(f"bExecuteGCode = {bExecuteGCode}")
+            print(f"current_status = {current_status}")
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
+
 
     def _unimplement(self):
         QMessageBox.warning(self, "Warning", "开发中")
