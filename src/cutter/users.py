@@ -4,10 +4,11 @@ from typing import Union
 
 import qtpy.QtCore
 import qtpy.QtWidgets
+import cutter.consts as g
 from cutter.consts import COLUMN_NAME_MAPPING
 from cutter.consts import ROLE_NAMES
 from cutter.database import DB_CONN
-from cutter.database import get_users
+from cutter.database import get_users, create_user, update_user, delete_user
 from cutter.models import User
 from cutter.role_combox import RoleCombox
 from qtpy.QtCore import QAbstractTableModel
@@ -39,6 +40,9 @@ from qtpy.QtWidgets import QVBoxLayout
 class UserModel(QAbstractTableModel):
     def __init__(self, parent: Optional[qtpy.QtCore.QObject] = None) -> None:
         super().__init__(parent)
+        self.load_users()
+
+    def load_users(self):
         self.rawData = get_users()
 
     def headerData(
@@ -84,7 +88,8 @@ class UserModel(QAbstractTableModel):
             row = index.row()
             column = index.column()
             column_name = self.columnIndexToRowName(column)
-            data = self.rawData[row][column_name]
+            user = self.rawData[row]
+            data = user.__getattribute__(f"_{column_name}")
             # print(f"Row{row}, Column{column}, column_name: {column_name}, data={data}")
 
             if column_name == "role":
@@ -122,23 +127,20 @@ class UsersGridView(QTableView):
         # self.verticalHeader().show()
         self.setSortingEnabled(True)
 
-        self.doubleClicked.connect(self.editUserDialog)
-
-    # def sortByColumn(self, column: int, order: Qt.SortOrder):
-    #     print(f"column={column}, order={order}")
-
-    def editUserDialog(self, index: QModelIndex = None) -> None:
-        print("edit user")
-
-
 class UserFormDialog(QDialog):
     saveUser = Signal(User)
 
     def __init__(
-        self, user: Optional[User], parent: Optional[qtpy.QtWidgets.QWidget] = None
+        self, user: Optional[User] = None, parent: Optional[qtpy.QtWidgets.QWidget] = None
     ) -> None:
         super().__init__(parent)
-        self.user = user
+        if user is None:
+            self.user = User()
+            self._is_new = True
+        else:
+            self.user = user
+            self._is_new = False
+
         self._name_edit = QLineEdit()
         self._department_edit = QLineEdit()
         self._password_edit = QLineEdit()
@@ -169,16 +171,20 @@ class UserFormDialog(QDialog):
         main_layout.addLayout(button_layout)
         self.setLayout(main_layout)
         self.setFixedSize(400, 220)
-        self.setWindowTitle("添加用户")
 
-    def set_form_values(self):
-        pass
+        if self._is_new:
+            self.setWindowTitle("添加用户")
+        else:
+            self.setWindowTitle("编辑用户")
+            self._name_edit.setText(self.user._name)
+            self._department_edit.setText(self.user._department)
+            self._role_combox.setCurrentIndex(self.user._role)
 
     def get_form_values(self):
         self.user._name = self._name_edit.text()
         self.user._password = self._password_edit.text()
         self.user._department = self._department_edit.text()
-        self.user._role_id = self._role_combox.currentData()
+        self.user._role = int(self._role_combox.currentData())
 
     def accept(self):
         self.get_form_values()
@@ -197,9 +203,8 @@ class UsersDialog(QDialog):
         self.usersView = UsersGridView()
         self.usersView.setModel(self.usersModel)
         self.addUserButton = QPushButton("Add")
-        self.addUserButton.clicked.connect(self.addUser)
         self.deleteUserButton = QPushButton("Delete")
-        self.deleteUserButton.clicked.connect(self.deleteUsers)
+
 
         action_layout = QHBoxLayout()
         action_layout.addStretch(1)
@@ -215,7 +220,11 @@ class UsersDialog(QDialog):
 
         self.setLayout(main_layout)
 
-    def deleteUsers(self):
+        self.addUserButton.clicked.connect(self.openAddUserDialog)
+        self.deleteUserButton.clicked.connect(self.deleteUser)
+        self.usersView.doubleClicked.connect(self.openUpdateUserDialog)
+
+    def deleteUser(self):
         indexes = self.usersView.selectionModel().selectedRows()
         if len(indexes) < 1:
             msg = QMessageBox(self)
@@ -225,18 +234,40 @@ class UsersDialog(QDialog):
             msg.exec()
         else:
             index = indexes[0]
-            self.clearFocus()
-            print(f"delete row {index.row()}")
+            row = index.row()
+            user = self.usersModel.rawData[row]
+            if user:
+                if user._id == g.CURRENT_USER._id:
+                    QMessageBox.warning(self, "Warning", "该账号登录中，无法删除！")
+                    return
 
-    def addUser(self):
-        user = User()
-        dlg = UserFormDialog(user, self)
+                delete_user(user._id)
+                self.usersModel.rawData.pop(row)
+                self.usersModel.layoutChanged.emit()
+
+    def openAddUserDialog(self):
+        print("create_user")
+        dlg = UserFormDialog(None, self)
         dlg.saveUser.connect(self.receiveUserData)
         dlg.exec_()
 
+    def openUpdateUserDialog(self, index: QModelIndex = None) -> None:
+        print("edit user: ", index.row())
+        if index.row() < len(self.usersModel.rawData):
+            user = self.usersModel.rawData[index.row()]
+            dlg = UserFormDialog(user, self)
+            dlg.saveUser.connect(self.receiveUserData)
+            dlg.exec_()
+
     def receiveUserData(self, user: User):
-        print("received user data")
-        print(f"user={user}")
+        print(f"received user data: {user}")
+        if user._id is None:
+            create_user(user)
+        else:
+            update_user(user)
+
+        self.usersModel.load_users()
+        self.usersModel.layoutChanged.emit()
 
     # self.usersModel.addUser(
     #     {

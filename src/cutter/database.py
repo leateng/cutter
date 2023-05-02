@@ -73,15 +73,64 @@ def get_users():
         print("sql error:", query.lastError().text())
     else:
         while query.next():
-            u = {
-                "id": query.value("id"),
-                "name": query.value("name"),
-                "department": query.value("department"),
-                "role": query.value("role"),
-                "created_at": query.value("created_at"),
-            }
+            id = query.value("id")
+            name = query.value("name")
+            department = query.value("department")
+            role = query.value("role")
+            created_at = query.value("created_at")
+
+            u = User(id, name, None, role, department, created_at)
             users.append(u)
 
     print(f"get_users={users}")
 
     return users
+
+
+def create_user(user):
+    query = QSqlQuery(DB_CONN)
+    query.prepare(
+        """
+        INSERT INTO users (name, role, password, department, created_at)
+        VALUES(?, ?, ?, ?, ?)
+        """
+    )
+    query.addBindValue(user._name)
+    query.addBindValue(user._role)
+    query.addBindValue(user._password)
+    query.addBindValue(user._department)
+    query.addBindValue(str(datetime.now()))
+    ret = query.exec_()
+    print(f"insert user: {ret}")
+    ret
+
+
+def update_user(user):
+    query = QSqlQuery(DB_CONN)
+    if user._password is not None:
+        query.prepare("update users set name=?, role=?, password=?, department=? where id=?")
+        query.addBindValue(user._name)
+        query.addBindValue(user._role)
+        query.addBindValue(user._password)
+        query.addBindValue(user._department)
+        query.addBindValue(user._id)
+    else:
+        query.prepare("update users set name=?, role=?, department=? where id=?")
+        query.addBindValue(user._name)
+        query.addBindValue(user._role)
+        query.addBindValue(user._department)
+        query.addBindValue(user._id)
+
+    ret = query.exec_()
+    print(f"update user: {ret}")
+    ret
+
+
+def delete_user(id):
+    query = QSqlQuery(DB_CONN)
+    if id is not None:
+        query.prepare("delete from users where id=?")
+        query.addBindValue(id)
+        ret = query.exec_()
+        print(f"delete user: {ret}")
+        ret

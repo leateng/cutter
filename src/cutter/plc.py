@@ -1,7 +1,8 @@
 import pyads
+from cutter.consts import PLC_ADDR
 
 # connect to plc, may need to adjust by the real ip and port 
-PLC_CONN = pyads.Connection('192.168.3.29.1.1', 851)
+PLC_CONN = pyads.Connection(PLC_ADDR, 851)
 
 def init_plc_conn():
 	try:

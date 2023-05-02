@@ -2,48 +2,101 @@ from typing import Any, Optional, Union
 import qtpy.QtCore
 import qtpy.QtWidgets
 from qtpy.QtCore import QModelIndex, Qt, QAbstractTableModel, Slot, QSize
-from qtpy.QtGui import QBrush, QColor
-from qtpy.QtWidgets import QAbstractItemView, QApplication, QDialog, QHBoxLayout, QHeaderView, QMessageBox, QPushButton, QTableView, QVBoxLayout, QSizePolicy, QLayout, QWidget, QGroupBox, QGridLayout
+from qtpy.QtGui import QBrush, QColor, QIcon
+from qtpy.QtWidgets import QWidget, QDialog, QHBoxLayout, QMessageBox, QPushButton, QVBoxLayout, QSizePolicy, QLayout, QWidget, QGroupBox, QGridLayout, QFormLayout, QDoubleSpinBox, QLabel
 import qtawesome as qta
+from cutter.plc import PLC_CONN
+import pyads
 
 class JoyDialog(QDialog):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         self.joy_pad = JoyPad()
+        self.ab_move = ABMoveWidget()
+        self.ab_move.resize(200, 200)
 
         main_layout = QHBoxLayout()
         main_layout.addWidget(self.joy_pad)
+        main_layout.addWidget(self.ab_move)
         self.setLayout(main_layout)
+
+class JoyButton(QPushButton):
+    def __init__(self, icon: QIcon, orientation: bool, axis: str, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
+        super().__init__(icon, parent)
+
+        self.orientation = orientation
+        self.axis = axis
+        self.press_status = False
+
+        self.setStyleSheet("""
+            QPushButton{
+                font-size: 50px;
+                width: 98px;
+                height: 98px;
+                border-radius: 50px;
+                background-color: rgb(255, 170, 127);
+                border: 1px solid rgb(255, 170, 127);
+                color: white;
+            }
+            QPushButton:hover{
+                border: 1px double rgb(255, 85, 0);
+            }
+            QPushButton:pressed{
+                background-color: rgb(255, 85, 0);
+                border: 1px solid rgb(255, 85, 0);
+            }
+                           """)
+        self.pressed.connect(self.on_button_pressed)
+        self.released.connect(self.on_button_released)
+
+    def send_move_instruction(self, name, value):
+        if PLC_CONN.is_open:
+            PLC_CONN.write_by_name(name, value, pyads.PLCTYPE_BOOL)
+        else:
+            if self.press_status:
+                QMessageBox.warning(None, "Warning", "PLC 未连接")
+
+    def orientation_name(self):
+        if self.orientation:
+            return "Forward"
+        else:
+            return "Backward"
+
+    def instruction_name(self):
+        return f"GVL_HMI.bJog{self.orientation_name()}{self.axis}"
+
+    def on_button_pressed(self):
+        print("Jog button pressed")
+        self.press_status = True
+        self.send_move_instruction('GVL_HMI.bJog', True)
+        self.send_move_instruction(self.instruction_name(), True)
+
+    def on_button_released(self):
+        print("Jog button released")
+        self.press_status = False
+        self.send_move_instruction('GVL_HMI.bJog', False)
+        self.send_move_instruction(self.instruction_name(), False)
 
 
 class JoyPad(QWidget):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
-        self.setStyleSheet("""
-            QPushButton{
-                font-size: 50px;
-                width: 100px;
-                height: 100px;
-                border-radius: 50px;
-                background-color: rgb(255, 170, 127);
-                border: 2px solid rgb(255, 85, 0);
-                color: white;
-            }
-            QPushButton:hover{
-                border: 4px double rgb(0, 255, 0);
-            }
-            QPushButton:checked{
-                background-color: rgb(255, 170, 255);
-            }
-                           """)
+        self.button_up      = JoyButton(qta.icon("ei.arrow-up", color="#525960"), True, "Z")
+        self.button_down    = JoyButton(qta.icon("ei.arrow-down", color="#525960"), False, "Z")
+        
+        self.button_right   = JoyButton(qta.icon("ei.arrow-right", color="#525960"), True, "X")
+        self.button_left    = JoyButton(qta.icon("ei.arrow-left", color="#525960"), False, "X")
+        
+        self.button_forward = JoyButton(qta.icon("ei.arrow-up", color="#525960"), True, "Y")
+        self.button_back    = JoyButton(qta.icon("ei.arrow-down", color="#525960"), False, "Y")
 
-        self.button_up      = QPushButton(qta.icon("ei.caret-up", color="#525960").pixmap(100, 100), "")
-        self.button_down    = QPushButton(qta.icon("ei.caret-down", color="#525960").pixmap(100, 100), "")
-        self.button_left    = QPushButton(qta.icon("ei.caret-left", color="#525960").pixmap(50, 50), "")
-        self.button_right   = QPushButton(qta.icon("ei.caret-right", color="#525960").pixmap(50, 50), "")
-        self.button_forward = QPushButton(qta.icon("ei.caret-up", color="#525960").pixmap(50, 50), "")
-        self.button_back    = QPushButton(qta.icon("ei.caret-down", color="#525960").pixmap(50, 50), "")
+        self.button_up.setIconSize(QSize(50, 50))
+        self.button_down.setIconSize(QSize(50, 50))
+        self.button_left.setIconSize(QSize(50, 50))
+        self.button_right.setIconSize(QSize(50, 50))
+        self.button_forward.setIconSize(QSize(50, 50))
+        self.button_back.setIconSize(QSize(50, 50))
 
         z_button_layout = QVBoxLayout()
         z_button_layout.addWidget(self.button_up)
@@ -74,3 +127,123 @@ class JoyPad(QWidget):
         main_layout.addLayout(xy_button_group_wrapper_layout)
 
         self.setLayout(main_layout)
+
+        # events
+        # self.button_up.pressed.connect(self.on_button_up_pressed)
+        # self.button_up.released.connect(self.on_button_up_released)
+        # self.button_down.pressed.connect(self.on_button_down_pressed)
+        # self.button_down.released.connect(self.on_button_down_released)
+        # self.button_left.pressed.connect(self.on_button_left_pressed)
+        # self.button_left.released.connect(self.on_button_left_released)
+        # self.button_right.pressed.connect(self.on_button_right_pressed)
+        # self.button_right.released.connect(self.on_button_right_released)
+        # self.button_forward.pressed.connect(self.on_button_forward_pressed)
+        # self.button_forward.released.connect(self.on_button_forward_released)
+        # self.button_back.pressed.connect(self.on_button_back_pressed)
+        # self.button_back.released.connect(self.on_button_back_released)
+
+
+    # def send_move_instruction(self, name, value):
+    #     if PLC_CONN.is_open:
+    #         PLC_CONN.write_by_name(name, value, pyads.PLCTYPE_BOOL)
+    #     else:
+    #         QMessageBox.warning(self, "Warning", "PLC 未连接")
+
+    # def on_button_up_pressed(self):
+    #     print("button up pressed")
+    #     self.send_move_instruction('GVL_HMI.bJog', True)
+    #     self.send_move_instruction('GVL_HMI.bJogForwardZ', True)
+
+    # def on_button_up_released(self):
+    #     print("button up released")
+    #     self.send_move_instruction('GVL_HMI.bJog', False)
+    #     self.send_move_instruction('GVL_HMI.bJogForwardZ', False)
+
+    # def on_button_down_pressed(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', True)
+    #     self.send_move_instruction('GVL_HMI.bJogBackwardZ', True)
+
+    # def on_button_down_released(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', False)
+    #     self.send_move_instruction('GVL_HMI.bJogBackwardZ', False)
+
+    # def on_button_left_pressed(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', True)
+    #     self.send_move_instruction('GVL_HMI.bJogBackwardX', True)
+
+    # def on_button_left_released(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', False)
+    #     self.send_move_instruction('GVL_HMI.bJogBackwardX', False)
+
+    # def on_button_right_pressed(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', True)
+    #     self.send_move_instruction('GVL_HMI.bJogForwardX', True)
+
+    # def on_button_right_released(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', False)
+    #     self.send_move_instruction('GVL_HMI.bJogForwardX', False)
+
+    # def on_button_forward_pressed(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', True)
+    #     self.send_move_instruction('GVL_HMI.bJogForwardY', True)
+
+    # def on_button_forward_released(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', False)
+    #     self.send_move_instruction('GVL_HMI.bJogForwardY', False)
+
+    # def on_button_back_pressed(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', True)
+    #     self.send_move_instruction('GVL_HMI.bJogBackwardY', True)
+
+    # def on_button_back_released(self):
+    #     self.send_move_instruction('GVL_HMI.bJog', False)
+    #     self.send_move_instruction('GVL_HMI.bJogBackwardY', False)
+
+
+class ABMoveWidget(QWidget):
+    def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
+        super().__init__(parent)
+
+        self.x_spinbox = QDoubleSpinBox()
+        self.y_spinbox = QDoubleSpinBox()
+        self.z_spinbox = QDoubleSpinBox()
+        self.go_button = QPushButton("Go")
+        self.go_button.clicked.connect(self.on_go_button_click)
+    
+        xyz_layout = QFormLayout()
+        xyz_layout.addRow(QLabel("X"), self.x_spinbox)
+        xyz_layout.addRow(QLabel("Y"), self.y_spinbox)
+        xyz_layout.addRow(QLabel("Z"), self.z_spinbox)
+
+        go_button_layout = QHBoxLayout()
+        go_button_layout.addStretch(1)
+        go_button_layout.addWidget(self.go_button)
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(xyz_layout)
+        main_layout.addStretch(1)
+        main_layout.addLayout(go_button_layout)
+        #main_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
+
+        groupbox = QGroupBox("Move")
+        groupbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        groupbox.setLayout(main_layout)
+        group_wrapper_layout = QVBoxLayout()
+        group_wrapper_layout.addWidget(groupbox)
+
+        self.setLayout(group_wrapper_layout)
+
+    def on_go_button_click(self):
+        if PLC_CONN.is_open:
+            x = self.x_spinbox.value
+            y = self.y_spinbox.value
+            z = self.z_spinbox.value
+            print(f"absoulute move to: x={x}, y={y}, z={z}")
+
+            PLC_CONN.write_by_name('GVL_HMI.bAutoMove', True, pyads.PLCTYPE_BOOL)
+            PLC_CONN.write_by_name('GVL_HMI.lrAutoMovePosX', x, pyads.PLCTYPE_REAL)
+            PLC_CONN.write_by_name('GVL_HMI.lrAutoMovePosY', y, pyads.PLCTYPE_REAL)
+            PLC_CONN.write_by_name('GVL_HMI.lrAutoMovePosZ', z, pyads.PLCTYPE_REAL)
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
+
