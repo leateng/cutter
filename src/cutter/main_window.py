@@ -1,20 +1,37 @@
-from qtpy.QtCore import QSize, Qt
-from qtpy.QtGui import QIcon, QPixmap
-from qtpy.QtWidgets import QFormLayout, QGroupBox, QSpinBox, QStatusBar, QLabel, QMainWindow, QFileDialog, QMessageBox, QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget, QPushButton, QAction
-import ezdxf
-import qtawesome as qta
-from ezdxf.lldxf.const import DXFStructureError
-
 import cutter.rc_images
+import ezdxf
+import pyads
+import qtawesome as qta
 from cutter.about_dialog import AboutUsDialog
-from cutter.cad_widget import CADGraphicsView, DxfEntityScence
+from cutter.cad_widget import CADGraphicsView
+from cutter.cad_widget import DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
 from cutter.joy import JoyDialog
-from cutter.recipe_combox import RecipeCombo
-from cutter.users import UsersDialog
 from cutter.plc import PLC_CONN
-import pyads
+from cutter.recipe import RecipeCombo
+from cutter.recipe import RecipeDialg
+from cutter.users import UsersDialog
+from ezdxf.lldxf.const import DXFStructureError
+from qtpy.QtCore import QSize
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QIcon
+from qtpy.QtGui import QPixmap
+from qtpy.QtWidgets import QAction
+from qtpy.QtWidgets import QFileDialog
+from qtpy.QtWidgets import QFormLayout
+from qtpy.QtWidgets import QGroupBox
+from qtpy.QtWidgets import QLabel
+from qtpy.QtWidgets import QMainWindow
+from qtpy.QtWidgets import QMessageBox
+from qtpy.QtWidgets import QPushButton
+from qtpy.QtWidgets import QSizePolicy
+from qtpy.QtWidgets import QSpinBox
+from qtpy.QtWidgets import QSplitter
+from qtpy.QtWidgets import QStatusBar
+from qtpy.QtWidgets import QToolBar
+from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QWidget
 
 
 class MainWindow(QMainWindow):
@@ -38,21 +55,27 @@ class MainWindow(QMainWindow):
         action_open_dxf.triggered.connect(self._select_doc)
         toolbar.addAction(action_open_dxf)
 
-        action_start_machine = QAction(QIcon(QPixmap(":/images/start.png")), "启动机器", self)
+        action_start_machine = QAction(
+            QIcon(QPixmap(":/images/start.png")), "启动机器", self
+        )
         # action_start_machine.setIconText("start")
         # action_start_machine.setStatusTip("This is your button")
         action_start_machine.triggered.connect(self._start_machine)
         toolbar.addAction(action_start_machine)
 
-        action_open_recipe = QAction(QIcon(QPixmap(":/images/folder.png")), "配方管理", self)
-        action_open_recipe.triggered.connect(self._unimplement)
+        action_open_recipe = QAction(
+            QIcon(QPixmap(":/images/folder.png")), "配方管理", self
+        )
+        action_open_recipe.triggered.connect(self._open_recipe_dialog)
         toolbar.addAction(action_open_recipe)
 
         action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
         action_user_manage.triggered.connect(self._open_users_management)
         toolbar.addAction(action_user_manage)
 
-        action_controller = QAction(QIcon(QPixmap(":/images/game-controller.png")), "JOY", self)
+        action_controller = QAction(
+            QIcon(QPixmap(":/images/game-controller.png")), "JOY", self
+        )
         action_controller.triggered.connect(self._open_joy)
         toolbar.addAction(action_controller)
 
@@ -96,7 +119,7 @@ class MainWindow(QMainWindow):
         machine_param_group.setLayout(machine_param_layout)
 
         machine_info_layout = QFormLayout()
-        plc_status = "已连接"  if PLC_CONN.is_open else "断开"
+        plc_status = "已连接" if PLC_CONN.is_open else "断开"
         machine_info_layout.addRow(QLabel("连接状态"), QLabel(plc_status))
         machine_info_layout.addRow(QLabel("坐标"), QLabel("X: 12 Y: 11 Z: 22"))
         machine_info_layout.addRow(QLabel("转速"), QLabel("5000"))
@@ -105,7 +128,7 @@ class MainWindow(QMainWindow):
 
         left_layout = QVBoxLayout()
         left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        recipe_layout = QFormLayout() 
+        recipe_layout = QFormLayout()
         recipe_icon = QLabel("选择配方")
         recipe_icon.setPixmap(qta.icon("ei.th-list", color="#525960").pixmap(20, 20))
         recipe_layout.addRow(recipe_icon, self.recipe_combox)
@@ -120,7 +143,6 @@ class MainWindow(QMainWindow):
         left_widget.setLayout(left_layout)
         right_widget = QWidget()
         right_widget.setLayout(right_layout)
-
 
         self.main_splitter.addWidget(left_widget)
         self.main_splitter.addWidget(right_widget)
@@ -181,6 +203,11 @@ class MainWindow(QMainWindow):
         dlg = AboutUsDialog()
         dlg.exec()
 
+    def _open_recipe_dialog(self):
+        dlg = RecipeDialg(self)
+        dlg.resize(1200, 800)
+        dlg.exec()
+
     def _open_users_management(self):
         dlg = UsersDialog()
         dlg.resize(1000, 620)
@@ -199,15 +226,20 @@ class MainWindow(QMainWindow):
 
     def _start_machine(self):
         if PLC_CONN.is_open:
-            strGFileName = PLC_CONN.write_by_name('GVL_HMI.strGFileName', 'gb2.nc', pyads.PLCTYPE_STRING)
-            bExecuteGCode = PLC_CONN.write_by_name('GVL_HMI.bExecuteGCode', True, pyads.PLCTYPE_BOOL)
-            current_status = PLC_CONN.read_by_name('GVL_HMI.diCrtStatus', pyads.PLCTYPE_INT)
+            strGFileName = PLC_CONN.write_by_name(
+                "GVL_HMI.strGFileName", "gb2.nc", pyads.PLCTYPE_STRING
+            )
+            bExecuteGCode = PLC_CONN.write_by_name(
+                "GVL_HMI.bExecuteGCode", True, pyads.PLCTYPE_BOOL
+            )
+            current_status = PLC_CONN.read_by_name(
+                "GVL_HMI.diCrtStatus", pyads.PLCTYPE_INT
+            )
             print(f"strGFileName = {strGFileName}")
             print(f"bExecuteGCode = {bExecuteGCode}")
             print(f"current_status = {current_status}")
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
-
 
     def _unimplement(self):
         QMessageBox.warning(self, "Warning", "开发中")

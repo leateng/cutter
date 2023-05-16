@@ -1,5 +1,5 @@
-PySide6==6.4.3
+PySide2==5.15.2
 ezdxf==1.0.2
-nuitka==1.5.5
 qtawesome==1.2.3
 qtpy==2.3.0
+pyinstaller=5.10.1

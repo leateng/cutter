@@ -5,7 +5,7 @@ import cutter.consts as g
 from cutter.database import init_db
 from cutter.login import LoginDialog
 from cutter.main_window import MainWindow
-from cutter.plc import PLC_CONN, init_plc_conn
+from cutter.plc import init_plc_conn
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QApplication
 from qtpy.QtWidgets import QDialog
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # app.exec_()
 
     init_db()
-    init_plc_conn()
+    # init_plc_conn()
 
     login_dialog = LoginDialog()
     if login_dialog.exec() == QDialog.DialogCode.Accepted:
