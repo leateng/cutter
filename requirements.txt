@@ -1,5 +1,6 @@
-PySide2==5.15.2
-ezdxf==1.0.2
+PySide2==5.15.2.1
+ezdxf==1.0.3
 qtawesome==1.2.3
-qtpy==2.3.0
-pyinstaller=5.10.1
+qtpy==2.3.1
+pyinstaller==5.11.0
+pyads==3.3.9

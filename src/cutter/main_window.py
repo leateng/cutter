@@ -1,37 +1,36 @@
-import cutter.rc_images
 import ezdxf
 import pyads
 import qtawesome as qta
+from ezdxf.lldxf.const import DXFStructureError
+from qtpy.QtCore import QSize, Qt
+from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtWidgets import (
+    QAction,
+    QFileDialog,
+    QFormLayout,
+    QGroupBox,
+    QLabel,
+    QMainWindow,
+    QMessageBox,
+    QPushButton,
+    QSizePolicy,
+    QSpinBox,
+    QSplitter,
+    QStatusBar,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+)
+
+import cutter.rc_images
 from cutter.about_dialog import AboutUsDialog
-from cutter.cad_widget import CADGraphicsView
-from cutter.cad_widget import DxfEntityScence
+from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
 from cutter.joy import JoyDialog
 from cutter.plc import PLC_CONN
-from cutter.recipe import RecipeCombo
-from cutter.recipe import RecipeDialg
+from cutter.recipe import RecipeCombo, RecipeDialg
 from cutter.users import UsersDialog
-from ezdxf.lldxf.const import DXFStructureError
-from qtpy.QtCore import QSize
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QIcon
-from qtpy.QtGui import QPixmap
-from qtpy.QtWidgets import QAction
-from qtpy.QtWidgets import QFileDialog
-from qtpy.QtWidgets import QFormLayout
-from qtpy.QtWidgets import QGroupBox
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QMainWindow
-from qtpy.QtWidgets import QMessageBox
-from qtpy.QtWidgets import QPushButton
-from qtpy.QtWidgets import QSizePolicy
-from qtpy.QtWidgets import QSpinBox
-from qtpy.QtWidgets import QSplitter
-from qtpy.QtWidgets import QStatusBar
-from qtpy.QtWidgets import QToolBar
-from qtpy.QtWidgets import QVBoxLayout
-from qtpy.QtWidgets import QWidget
 
 
 class MainWindow(QMainWindow):
@@ -196,9 +195,6 @@ class MainWindow(QMainWindow):
         # self.entity_tree = EntityTree(self.dxf_entities)
         self.entity_tree.set_entities(self.dxf_entities)
 
-    def onStartCutter(self):
-        print("start machine")
-
     def _open_about_us(self):
         dlg = AboutUsDialog()
         dlg.exec()
@@ -227,7 +223,7 @@ class MainWindow(QMainWindow):
     def _start_machine(self):
         if PLC_CONN.is_open:
             strGFileName = PLC_CONN.write_by_name(
-                "GVL_HMI.strGFileName", "gb2.nc", pyads.PLCTYPE_STRING
+                "GVL_HMI.strGFileName", "9999.nc", pyads.PLCTYPE_STRING
             )
             bExecuteGCode = PLC_CONN.write_by_name(
                 "GVL_HMI.bExecuteGCode", True, pyads.PLCTYPE_BOOL
