@@ -1,6 +1,7 @@
 import os
 import sys
 
+from qtpy import QtCore, QtGui
 from qtpy.QtGui import QFont
 from qtpy.QtWidgets import QApplication, QDialog
 
@@ -13,6 +14,21 @@ from cutter.plc import init_plc_conn
 os.environ["QT_API"] = "pyside2"
 
 if __name__ == "__main__":
+    # guiapp = QtGui.QGuiApplication(sys.argv)
+    # dpi = (guiapp.screens()[0]).logicalDotsPerInch()
+    # print(f"screen logical dpi: {dpi}")
+    #
+    # if dpi == 96.0:
+    #     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_DisableHighDpiScaling)
+    # else:
+    #     QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
+
+    if hasattr(QtCore.Qt, "AA_EnableHighDpiScaling"):
+        QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+
+    if hasattr(QtCore.Qt, "AA_UseHighDpiPixmaps"):
+        QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
+
     app = QApplication(sys.argv)
 
     # 设置默认字体
