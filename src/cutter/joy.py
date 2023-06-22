@@ -23,6 +23,8 @@ from qtpy.QtWidgets import (
 )
 
 from cutter.plc import PLC_CONN
+from cutter.axis_timer import axis_timer
+from cutter.machine_info import MachineInfo
 
 
 class JoyDialog(QDialog):
@@ -209,6 +211,8 @@ class ABMoveWidget(QWidget):
         self.go_button = QPushButton("Go")
         self.go_button.clicked.connect(self.on_go_button_click)
 
+        self.machine_info = MachineInfo(self)
+
         xyz_layout = QFormLayout()
         xyz_layout.addRow(QLabel("X"), self.x_spinbox)
         xyz_layout.addRow(QLabel("Y"), self.y_spinbox)
@@ -228,6 +232,7 @@ class ABMoveWidget(QWidget):
         main_layout.addLayout(go_button_layout)
         main_layout.addStretch(1)
         main_layout.addLayout(align_layout)
+        main_layout.addWidget(self.machine_info)
         # main_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
 
         groupbox = QGroupBox("Move")
