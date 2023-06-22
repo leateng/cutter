@@ -27,6 +27,8 @@ from cutter.about_dialog import AboutUsDialog
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
+from cutter.gcode import GCode
+from cutter.gcode_dialog import GCodeDialog
 from cutter.joy import JoyDialog
 from cutter.plc import PLC_CONN
 from cutter.recipe import RecipeCombo, RecipeDialg
@@ -79,7 +81,7 @@ class MainWindow(QMainWindow):
         toolbar.addAction(action_controller)
 
         generate_gcode = QAction(QIcon(QPixmap(":/images/gcode.png")), "生成GCODE", self)
-        generate_gcode.triggered.connect(self._unimplement)
+        generate_gcode.triggered.connect(self._open_gcode_dialog)
         toolbar.addAction(generate_gcode)
 
         action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
@@ -236,6 +238,12 @@ class MainWindow(QMainWindow):
             print(f"current_status = {current_status}")
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
+
+    def _open_gcode_dialog(self):
+        generator = GCode([])
+        dlg = GCodeDialog(self, generator.generate())
+        dlg.setFixedSize(800, 390)
+        dlg.exec()
 
     def _unimplement(self):
         QMessageBox.warning(self, "Warning", "开发中")

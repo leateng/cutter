@@ -1,0 +1,33 @@
+(Generated with: DXF2GCODE, Version: Py3.9.2 PyQt5.15.4, Date: $Date: 2022-02-26 15:29 CET $)
+(Created from file: C:/Users/teng.li/code/python/cutter/dxf-examples/raw-gb3.dxf)
+(Output format description: G-CODE for LinuxCNC)
+(Time: Thu Jun 22 13:08:09 2023)
+G21 (Units in millimeters)
+G90 (Absolute programming)
+G64 (Default cutting) G17 (XY plane) G40 (Cancel radius comp.) G49 (Cancel length comp.)
+G0 Z  15.000 
+
+(*** LAYER: 0 ***)
+T1 M6
+S6000
+
+(* SHAPE Nr: 0 *)
+G0 X 113.523 Y 107.426
+M3 M8
+G0 Z   3.000 
+F150
+G1 Z  -1.500
+F400
+G3 X 111.816 Y 108.133 I  -1.000 J   0.000
+F150
+G1 Z  -3.000
+F400
+G2 X 144.405 Y 137.894 I  16.294 J  14.880
+G2 X 111.816 Y 108.133 I -16.294 J -14.880
+G2 X 113.523 Y 107.426 I   0.707 J  -0.707
+F150
+G1 Z   3.000
+G0 Z  15.000 
+M9 M5
+G0 X   0.000 Y   0.000
+M2 (Program end)
