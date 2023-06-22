@@ -191,8 +191,16 @@ class ABMoveWidget(QWidget):
         super().__init__(parent)
 
         self.x_spinbox = QDoubleSpinBox()
+        self.x_spinbox.setMaximum(9999)
+        self.x_spinbox.setMinimum(-9999)
+
         self.y_spinbox = QDoubleSpinBox()
+        self.y_spinbox.setMaximum(9999)
+        self.y_spinbox.setMinimum(-9999)
+
         self.z_spinbox = QDoubleSpinBox()
+        self.y_spinbox.setMaximum(9999)
+        self.y_spinbox.setMinimum(-9999)
 
         self.align_left = QPushButton("左边对齐")
         self.align_bottom = QPushButton("下边对齐")

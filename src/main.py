@@ -10,6 +10,7 @@ from cutter.database import init_db
 from cutter.login import LoginDialog
 from cutter.main_window import MainWindow
 from cutter.plc import init_plc_conn
+from cutter.axis_timer import axis_timer
 
 os.environ["QT_API"] = "pyside2"
 
@@ -43,6 +44,7 @@ if __name__ == "__main__":
 
     init_db()
     init_plc_conn()
+    axis_timer.start()
 
     login_dialog = LoginDialog()
     if login_dialog.exec() == QDialog.DialogCode.Accepted:

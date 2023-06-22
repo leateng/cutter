@@ -33,6 +33,8 @@ from cutter.joy import JoyDialog
 from cutter.plc import PLC_CONN
 from cutter.recipe import RecipeCombo, RecipeDialg
 from cutter.users import UsersDialog
+from cutter.axis_timer import axis_timer
+from cutter.machine_info import MachineInfo
 
 
 class MainWindow(QMainWindow):
@@ -40,9 +42,13 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.dxf_entities = []
+        self.machine_info = MachineInfo(self)
+        axis_timer.addObserver(self.machine_info)
         self._init_toolbar()
         self._init_layout()
         self.setWindowIcon(QIcon(QPixmap(":/images/cutter.png")))
+
+
         # self._init_statusbar()
 
     def _init_toolbar(self):
@@ -123,11 +129,16 @@ class MainWindow(QMainWindow):
         machine_param_group = QGroupBox("参数")
         machine_param_group.setLayout(machine_param_layout)
 
-        machine_info_layout = QFormLayout()
-        plc_status = "已连接" if PLC_CONN.is_open else "断开"
-        machine_info_layout.addRow(QLabel("连接状态"), QLabel(plc_status))
-        machine_info_layout.addRow(QLabel("坐标"), QLabel("X: 12 Y: 11 Z: 22"))
-        machine_info_layout.addRow(QLabel("转速"), QLabel("5000"))
+        # machine_info_layout = QFormLayout()
+        # plc_status = "已连接" if PLC_CONN.is_open else "断开"
+        # machine_info_layout.addRow(QLabel("连接状态"), QLabel(plc_status))
+        # machine_info_layout.addRow(QLabel("坐标"), QLabel("X: 12 Y: 11 Z: 22"))
+        # machine_info_layout.addRow(QLabel("转速"), QLabel("5000"))
+        # machine_info_group = QGroupBox("机器信息")
+        # machine_info_group.setLayout(machine_info_layout)
+
+        machine_info_layout = QVBoxLayout()
+        machine_info_layout.addWidget(self.machine_info)
         machine_info_group = QGroupBox("机器信息")
         machine_info_group.setLayout(machine_info_layout)
 
