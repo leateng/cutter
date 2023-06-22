@@ -84,6 +84,10 @@ class MainWindow(QMainWindow):
         generate_gcode.triggered.connect(self._open_gcode_dialog)
         toolbar.addAction(generate_gcode)
 
+        go_home = QAction(QIcon(QPixmap(":/images/gcode.png")), "回零", self)
+        go_home.triggered.connect(self._go_home)
+        toolbar.addAction(go_home)
+
         action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
         action_about_us.triggered.connect(self._open_about_us)
         toolbar.addAction(action_about_us)
@@ -243,6 +247,13 @@ class MainWindow(QMainWindow):
         dlg = GCodeDialog(self, generator.generate())
         dlg.setFixedSize(800, 390)
         dlg.exec()
+
+    def _go_home(self):
+        if PLC_CONN.is_open:
+            print("GVL_HMI.bHome=True")
+            PLC_CONN.write_by_name("GVL_HMI.bHome", True, pyads.PLCTYPE_BOOL)
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
 
     def _unimplement(self):
         QMessageBox.warning(self, "Warning", "开发中")

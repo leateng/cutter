@@ -57,7 +57,7 @@ class JoyButton(QPushButton):
         self.axis = axis
         self.press_status = False
         if slow_speed is True:
-            self.speed = 5.0
+            self.speed = 1.0
         else:
             self.speed = 10.0
 
