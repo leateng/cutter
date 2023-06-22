@@ -39,6 +39,7 @@ class JoyDialog(QDialog):
 
         self.setWindowTitle("JOY")
         self.setWindowIcon(QIcon(QPixmap(":/images/game-controller.png")))
+        self.setFixedSize(1100, 590)
 
 
 class JoyButton(QPushButton):
@@ -47,6 +48,7 @@ class JoyButton(QPushButton):
         icon: QIcon,
         orientation: bool,
         axis: str,
+        slow_speed: bool = False,
         parent: Optional[qtpy.QtWidgets.QWidget] = None,
     ) -> None:
         super().__init__(icon, parent)
@@ -54,6 +56,12 @@ class JoyButton(QPushButton):
         self.orientation = orientation
         self.axis = axis
         self.press_status = False
+        if slow_speed is True:
+            self.speed = 5.0
+        else:
+            self.speed = 10.0
+
+        self.setIconSize(QSize(50, 50))
 
         self.setStyleSheet(
             """
@@ -78,9 +86,10 @@ class JoyButton(QPushButton):
         self.pressed.connect(self.on_button_pressed)
         self.released.connect(self.on_button_released)
 
-    def send_move_instruction(self, name, value):
+    def send_move_instruction(self, name, value, val_type):
         if PLC_CONN.is_open:
-            PLC_CONN.write_by_name(name, value, pyads.PLCTYPE_BOOL)
+            print(f"write: {name}={value}")
+            PLC_CONN.write_by_name(name, value, val_type)
         else:
             if self.press_status:
                 QMessageBox.warning(None, "Warning", "PLC 未连接")
@@ -94,52 +103,52 @@ class JoyButton(QPushButton):
     def instruction_name(self):
         return f"GVL_HMI.bJog{self.orientation_name()}{self.axis}"
 
+    def speed_instruction_name(self):
+        return f"GVL_HMI.lrJogVlct{self.axis}"
+
     def on_button_pressed(self):
         print("Jog button pressed")
         self.press_status = True
-        self.send_move_instruction("GVL_HMI.bJog", True)
-        self.send_move_instruction(self.instruction_name(), True)
+
+        self.send_move_instruction(self.speed_instruction_name(), self.speed, pyads.PLCTYPE_LREAL)
+        self.send_move_instruction(self.instruction_name(), True, pyads.PLCTYPE_BOOL)
+        self.send_move_instruction("GVL_HMI.bJog", True, pyads.PLCTYPE_BOOL)
 
     def on_button_released(self):
         print("Jog button released")
         self.press_status = False
-        self.send_move_instruction("GVL_HMI.bJog", False)
-        self.send_move_instruction(self.instruction_name(), False)
+        
+        self.send_move_instruction(self.instruction_name(), False, pyads.PLCTYPE_BOOL)
+        self.send_move_instruction("GVL_HMI.bJog", False, pyads.PLCTYPE_BOOL)
 
 
 class JoyPad(QWidget):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
-        self.button_up = JoyButton(qta.icon("ei.arrow-up", color="#525960"), True, "Z")
-        self.button_down = JoyButton(
-            qta.icon("ei.arrow-down", color="#525960"), False, "Z"
-        )
+        self.button_up = JoyButton(qta.icon("fa.angle-double-up", color="#525960"), True, "Z")
+        self.button_down = JoyButton(qta.icon("fa.angle-double-down", color="#525960"), False, "Z")
+        
+        self.button_slow_up = JoyButton(qta.icon("fa.angle-up", color="#525960"), True, "Z", True)
+        self.button_slow_down = JoyButton(qta.icon("fa.angle-down", color="#525960"), False, "Z", True)
 
-        self.button_right = JoyButton(
-            qta.icon("ei.arrow-right", color="#525960"), True, "X"
-        )
-        self.button_left = JoyButton(
-            qta.icon("ei.arrow-left", color="#525960"), False, "X"
-        )
+        self.button_right = JoyButton(qta.icon("fa.angle-double-right", color="#525960"), True, "X")
+        self.button_left = JoyButton(qta.icon("fa.angle-double-left", color="#525960"), False, "X")
 
-        self.button_forward = JoyButton(
-            qta.icon("ei.arrow-up", color="#525960"), True, "Y"
-        )
-        self.button_back = JoyButton(
-            qta.icon("ei.arrow-down", color="#525960"), False, "Y"
-        )
+        self.button_slow_right = JoyButton(qta.icon("fa.angle-right", color="#525960"), True, "X", True)
+        self.button_slow_left = JoyButton(qta.icon("fa.angle-left", color="#525960"), False, "X", True)
 
-        self.button_up.setIconSize(QSize(50, 50))
-        self.button_down.setIconSize(QSize(50, 50))
-        self.button_left.setIconSize(QSize(50, 50))
-        self.button_right.setIconSize(QSize(50, 50))
-        self.button_forward.setIconSize(QSize(50, 50))
-        self.button_back.setIconSize(QSize(50, 50))
+        self.button_forward = JoyButton(qta.icon("fa.angle-double-up", color="#525960"), True, "Y")
+        self.button_back = JoyButton(qta.icon("fa.angle-double-down", color="#525960"), False, "Y")
+
+        self.button_slow_forward = JoyButton(qta.icon("fa.angle-up", color="#525960"), True, "Y", True)
+        self.button_slow_back = JoyButton(qta.icon("fa.angle-down", color="#525960"), False, "Y", True)
 
         z_button_layout = QVBoxLayout()
         z_button_layout.addWidget(self.button_up)
+        z_button_layout.addWidget(self.button_slow_up)
         z_button_layout.addStretch(1)
+        z_button_layout.addWidget(self.button_slow_down)
         z_button_layout.addWidget(self.button_down)
         z_button_group = QGroupBox("Z")
         z_button_group.setSizePolicy(
@@ -152,10 +161,15 @@ class JoyPad(QWidget):
 
         xy_button_layout = QGridLayout()
         # xy_button_layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
-        xy_button_layout.addWidget(self.button_left, 1, 0)
-        xy_button_layout.addWidget(self.button_right, 1, 2)
-        xy_button_layout.addWidget(self.button_forward, 0, 1)
-        xy_button_layout.addWidget(self.button_back, 2, 1)
+        xy_button_layout.addWidget(self.button_left, 2, 0)
+        xy_button_layout.addWidget(self.button_right, 2, 4)
+        xy_button_layout.addWidget(self.button_forward, 0, 2)
+        xy_button_layout.addWidget(self.button_back, 4, 2)
+
+        xy_button_layout.addWidget(self.button_slow_left, 2, 1)
+        xy_button_layout.addWidget(self.button_slow_right, 2, 3)
+        xy_button_layout.addWidget(self.button_slow_forward, 1, 2)
+        xy_button_layout.addWidget(self.button_slow_back, 3, 2)
         xy_button_group = QGroupBox("X/Y")
         xy_button_group.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed

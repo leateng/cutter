@@ -213,7 +213,6 @@ class MainWindow(QMainWindow):
 
     def _open_joy(self):
         dlg = JoyDialog()
-        dlg.setFixedSize(800, 390)
         dlg.exec()
 
     def _init_statusbar(self):
