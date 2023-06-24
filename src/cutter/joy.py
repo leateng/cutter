@@ -21,10 +21,10 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-
-from cutter.plc import PLC_CONN
+from cutter.plc import PLC_CONN, read_axis
 from cutter.axis_timer import axis_timer
 from cutter.machine_info import MachineInfo
+from cutter.consts import ALIGNMENT
 
 
 class JoyDialog(QDialog):
@@ -230,10 +230,6 @@ class ABMoveWidget(QWidget):
         self.z_spinbox.setMaximum(9999)
         self.z_spinbox.setMinimum(-9999)
 
-        self.align_left = QPushButton("左边对齐")
-        self.align_bottom = QPushButton("下边对齐")
-        self.align_top = QPushButton("顶部对齐")
-
         self.go_button = QPushButton("Go")
         self.go_button.clicked.connect(self.on_go_button_click)
 
@@ -244,10 +240,53 @@ class ABMoveWidget(QWidget):
         xyz_layout.addRow(QLabel("Y"), self.y_spinbox)
         xyz_layout.addRow(QLabel("Z"), self.z_spinbox)
 
-        align_layout = QHBoxLayout()
-        align_layout.addWidget(self.align_left)
-        align_layout.addWidget(self.align_bottom)
-        align_layout.addWidget(self.align_top)
+        # 对刀
+        self.align_x_button = QPushButton("左边对齐")
+        self.align_x_button.clicked.connect(self.confirm_alignment_x)
+        self.align_x = QDoubleSpinBox()
+        self.align_x.setMaximum(9999)
+        self.align_x.setMinimum(-9999)
+        self.align_x.setEnabled(False)
+        if ALIGNMENT["x"] is not None:
+            self.align_x.setValue(ALIGNMENT["x"])
+
+        self.align_y_button = QPushButton("下边对齐")
+        self.align_y_button.clicked.connect(self.confirm_alignment_y)
+        self.align_y = QDoubleSpinBox()
+        self.align_y.setMaximum(9999)
+        self.align_y.setMinimum(-9999)
+        self.align_y.setEnabled(False)
+        if ALIGNMENT["y"] is not None:
+            self.align_y.setValue(ALIGNMENT["y"])
+
+        self.align_z_button = QPushButton("顶部对齐")
+        self.align_z_button.clicked.connect(self.confirm_alignment_z)
+        self.align_z = QDoubleSpinBox()
+        self.align_z.setMaximum(9999)
+        self.align_z.setMinimum(-9999)
+        self.align_z.setEnabled(False)
+        if ALIGNMENT["z"] is not None:
+            self.align_z.setValue(ALIGNMENT["z"])
+
+        align_layout_x = QHBoxLayout()
+        align_layout_x.addWidget(QLabel("X: "))
+        align_layout_x.addWidget(self.align_x)
+        align_layout_x.addWidget(self.align_x_button)
+
+        align_layout_y = QHBoxLayout()
+        align_layout_y.addWidget(QLabel("Y: "))
+        align_layout_y.addWidget(self.align_y)
+        align_layout_y.addWidget(self.align_y_button)
+
+        align_layout_z = QHBoxLayout()
+        align_layout_z.addWidget(QLabel("Z: "))
+        align_layout_z.addWidget(self.align_z)
+        align_layout_z.addWidget(self.align_z_button)
+
+        align_layout = QVBoxLayout()
+        align_layout.addLayout(align_layout_x)
+        align_layout.addLayout(align_layout_y)
+        align_layout.addLayout(align_layout_z)
 
         go_button_layout = QHBoxLayout()
         go_button_layout.addStretch(1)
@@ -282,5 +321,29 @@ class ABMoveWidget(QWidget):
             PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosY", y, pyads.PLCTYPE_LREAL)
             PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosZ", z, pyads.PLCTYPE_LREAL)
             PLC_CONN.write_by_name("GVL_HMI.bAutoMove", True, pyads.PLCTYPE_BOOL)
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
+
+    def confirm_alignment_x(self):
+        if PLC_CONN.is_open:
+            x, y, z = read_axis()
+            ALIGNMENT["x"] = x
+            self.align_x.setValue(ALIGNMENT["x"])
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
+
+    def confirm_alignment_y(self):
+        if PLC_CONN.is_open:
+            x, y, z = read_axis()
+            ALIGNMENT["y"] = y
+            self.align_y.setValue(ALIGNMENT["y"])
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
+
+    def confirm_alignment_z(self):
+        if PLC_CONN.is_open:
+            x, y, z = read_axis()
+            ALIGNMENT["z"] = z
+            self.align_z.setValue(ALIGNMENT["z"])
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
