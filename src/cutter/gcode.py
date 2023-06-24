@@ -12,12 +12,11 @@ class GCode:
         self.instructions = []
 
     def prepare_instructions(self):
-        self.instructions.append("G21 (Units in millimeters)")
         self.instructions.append("G90 (Absolute programming)")
         self.instructions.append("G17 (XY plane)")
         self.instructions.append("G40 (Cancel radius comp)")
         self.instructions.append(
-            "G0 Z{:.3f} (z safe margin)".format(self.safe_height())
+            "G00 Z{:.3f} (z safe margin)".format(self.safe_height())
         )
         self.instructions.append("T1 M6")
         self.instructions.append("S6000")
@@ -30,11 +29,13 @@ class GCode:
 
     def draw_entities(self):
         if len(self.dxf_entities) == 1 and self.dxf_entities[0].dxftype() == "CIRCLE":
+            self.instructions.append("G00 Z{:.3f} (cut deepth)".format(ALIGNMENT["z"]))
             self.draw_circle(self.dxf_entities[0])
         else:
             self.draw_line_and_arc()
 
     def draw_circle(self, circle):
+        # embed()
         center = circle.dxf.center
         radius = circle.dxf.radius
 
