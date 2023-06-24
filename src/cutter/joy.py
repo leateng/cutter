@@ -112,14 +112,16 @@ class JoyButton(QPushButton):
         print("Jog button pressed")
         self.press_status = True
 
-        self.send_move_instruction(self.speed_instruction_name(), self.speed, pyads.PLCTYPE_LREAL)
+        self.send_move_instruction(
+            self.speed_instruction_name(), self.speed, pyads.PLCTYPE_LREAL
+        )
         self.send_move_instruction(self.instruction_name(), True, pyads.PLCTYPE_BOOL)
         self.send_move_instruction("GVL_HMI.bJog", True, pyads.PLCTYPE_BOOL)
 
     def on_button_released(self):
         print("Jog button released")
         self.press_status = False
-        
+
         self.send_move_instruction(self.instruction_name(), False, pyads.PLCTYPE_BOOL)
         self.send_move_instruction("GVL_HMI.bJog", False, pyads.PLCTYPE_BOOL)
 
@@ -128,23 +130,47 @@ class JoyPad(QWidget):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
 
-        self.button_up = JoyButton(qta.icon("fa.angle-double-up", color="#525960"), True, "Z")
-        self.button_down = JoyButton(qta.icon("fa.angle-double-down", color="#525960"), False, "Z")
-        
-        self.button_slow_up = JoyButton(qta.icon("fa.angle-up", color="#525960"), True, "Z", True)
-        self.button_slow_down = JoyButton(qta.icon("fa.angle-down", color="#525960"), False, "Z", True)
+        self.button_up = JoyButton(
+            qta.icon("fa.angle-double-up", color="#525960"), True, "Z"
+        )
+        self.button_down = JoyButton(
+            qta.icon("fa.angle-double-down", color="#525960"), False, "Z"
+        )
 
-        self.button_right = JoyButton(qta.icon("fa.angle-double-right", color="#525960"), True, "X")
-        self.button_left = JoyButton(qta.icon("fa.angle-double-left", color="#525960"), False, "X")
+        self.button_slow_up = JoyButton(
+            qta.icon("fa.angle-up", color="#525960"), True, "Z", True
+        )
+        self.button_slow_down = JoyButton(
+            qta.icon("fa.angle-down", color="#525960"), False, "Z", True
+        )
 
-        self.button_slow_right = JoyButton(qta.icon("fa.angle-right", color="#525960"), True, "X", True)
-        self.button_slow_left = JoyButton(qta.icon("fa.angle-left", color="#525960"), False, "X", True)
+        self.button_right = JoyButton(
+            qta.icon("fa.angle-double-right", color="#525960"), True, "X"
+        )
+        self.button_left = JoyButton(
+            qta.icon("fa.angle-double-left", color="#525960"), False, "X"
+        )
 
-        self.button_forward = JoyButton(qta.icon("fa.angle-double-up", color="#525960"), True, "Y")
-        self.button_back = JoyButton(qta.icon("fa.angle-double-down", color="#525960"), False, "Y")
+        self.button_slow_right = JoyButton(
+            qta.icon("fa.angle-right", color="#525960"), True, "X", True
+        )
+        self.button_slow_left = JoyButton(
+            qta.icon("fa.angle-left", color="#525960"), False, "X", True
+        )
 
-        self.button_slow_forward = JoyButton(qta.icon("fa.angle-up", color="#525960"), True, "Y", True)
-        self.button_slow_back = JoyButton(qta.icon("fa.angle-down", color="#525960"), False, "Y", True)
+        self.button_forward = JoyButton(
+            qta.icon("fa.angle-double-up", color="#525960"), True, "Y"
+        )
+        self.button_back = JoyButton(
+            qta.icon("fa.angle-double-down", color="#525960"), False, "Y"
+        )
+
+        self.button_slow_forward = JoyButton(
+            qta.icon("fa.angle-up", color="#525960"), True, "Y", True
+        )
+        self.button_slow_back = JoyButton(
+            qta.icon("fa.angle-down", color="#525960"), False, "Y", True
+        )
 
         z_button_layout = QVBoxLayout()
         z_button_layout.addWidget(self.button_up)
@@ -201,8 +227,8 @@ class ABMoveWidget(QWidget):
         self.y_spinbox.setMinimum(-9999)
 
         self.z_spinbox = QDoubleSpinBox()
-        self.y_spinbox.setMaximum(9999)
-        self.y_spinbox.setMinimum(-9999)
+        self.z_spinbox.setMaximum(9999)
+        self.z_spinbox.setMinimum(-9999)
 
         self.align_left = QPushButton("左边对齐")
         self.align_bottom = QPushButton("下边对齐")
@@ -252,9 +278,9 @@ class ABMoveWidget(QWidget):
             z = self.z_spinbox.value
             print(f"absoulute move to: x={x}, y={y}, z={z}")
 
-            PLC_CONN.write_by_name("GVL_HMI.bAutoMove", True, pyads.PLCTYPE_BOOL)
             PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosX", x, pyads.PLCTYPE_LREAL)
             PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosY", y, pyads.PLCTYPE_LREAL)
             PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosZ", z, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name("GVL_HMI.bAutoMove", True, pyads.PLCTYPE_BOOL)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
