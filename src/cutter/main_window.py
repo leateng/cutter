@@ -1,3 +1,4 @@
+import os
 import ezdxf
 import pyads
 import qtawesome as qta
@@ -47,7 +48,6 @@ class MainWindow(QMainWindow):
         self._init_toolbar()
         self._init_layout()
         self.setWindowIcon(QIcon(QPixmap(":/images/cutter.png")))
-
 
         # self._init_statusbar()
 
@@ -237,9 +237,32 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.statusBar)
 
     def _start_machine(self):
+        if len(self.dxf_entities) == 0:
+            QMessageBox.warning(self, "Warning", "没有可用的dxf实体!")
+            return
+
+        gcode = ""
+        try:
+            generator = GCode(self.dxf_entities)
+            gcode = generator.generate()
+        except Exception as e:
+            QMessageBox.warning(self, "Warning", e.args[0])
+            raise e
+            return
+
+        path = "c:\\TWinCAT\\Mc\\Nci\\cutter.nc"
+        directory = os.path.dirname(path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        file = open(path, "w")
+
+        file.write(gcode)
+        file.close()
+
         if PLC_CONN.is_open:
+            path = ""
             strGFileName = PLC_CONN.write_by_name(
-                "GVL_HMI.strGFileName", "9999.nc", pyads.PLCTYPE_STRING
+                "GVL_HMI.strGFileName", "cutter.nc", pyads.PLCTYPE_STRING
             )
             bExecuteGCode = PLC_CONN.write_by_name(
                 "GVL_HMI.bExecuteGCode", True, pyads.PLCTYPE_BOOL
@@ -254,8 +277,16 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
     def _open_gcode_dialog(self):
-        generator = GCode([])
-        dlg = GCodeDialog(self, generator.generate())
+        gcode = ""
+        try:
+            generator = GCode(self.dxf_entities)
+            gcode = generator.generate()
+        except Exception as e:
+            QMessageBox.warning(self, "Warning", e.args[0])
+            raise e
+            return
+
+        dlg = GCodeDialog(self, gcode)
         dlg.setFixedSize(800, 390)
         dlg.exec()
 
