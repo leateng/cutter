@@ -273,9 +273,9 @@ class ABMoveWidget(QWidget):
 
     def on_go_button_click(self):
         if PLC_CONN.is_open:
-            x = self.x_spinbox.value
-            y = self.y_spinbox.value
-            z = self.z_spinbox.value
+            x = self.x_spinbox.value()
+            y = self.y_spinbox.value()
+            z = self.z_spinbox.value()
             print(f"absoulute move to: x={x}, y={y}, z={z}")
 
             PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosX", x, pyads.PLCTYPE_LREAL)
