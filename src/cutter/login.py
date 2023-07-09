@@ -3,7 +3,7 @@ import cutter.rc_images
 from cutter.database import validate_login
 from qtpy.QtCore import Qt
 from qtpy.QtCore import Slot
-from qtpy.QtGui import QPixmap
+from qtpy.QtGui import QPixmap, QIcon
 from qtpy.QtWidgets import QDialog
 from qtpy.QtWidgets import QFormLayout
 from qtpy.QtWidgets import QHBoxLayout
@@ -20,6 +20,7 @@ class LoginDialog(QDialog):
 
         # 设置对话框标题
         self.setWindowTitle("登录")
+        self.setWindowIcon(QIcon(QPixmap(":/images/user1.png")))
 
         self.logo = QLabel()
         self.logo.setPixmap(QPixmap(":/images/hc.png"))

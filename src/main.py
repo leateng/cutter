@@ -52,7 +52,7 @@ if __name__ == "__main__":
         print("Successful login")
         win = MainWindow()
         win.setWindowTitle(f"Cutter-{g.CURRENT_USER._name}")
-        win.show()
+        win.showMaximized()
         app.exec_()
     else:
         # 用户取消登录，退出程序
