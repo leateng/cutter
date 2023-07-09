@@ -15,5 +15,9 @@
     <file>images/cutter.png</file>
     <file>images/location.png</file>
     <file>images/location2.png</file>
+    <file>images/target.png</file>
+    <file>images/target2.png</file>  
+    <file>images/button-bg.png</file>
+    <file>images/add.png</file>  
 </qresource>
 </RCC>

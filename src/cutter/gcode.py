@@ -82,9 +82,9 @@ class GCode:
         return "\n".join(self.instructions)
 
     def check_alignment(self):
-        # ALIGNMENT["x"] = 10
-        # ALIGNMENT["y"] = 10
-        # ALIGNMENT["z"] = 10
+        # ALIGNMENT["x"] = 0
+        # ALIGNMENT["y"] = 0
+        # ALIGNMENT["z"] = 0
 
         if ALIGNMENT["x"] is None or ALIGNMENT["y"] is None or ALIGNMENT["z"] is None:
             raise Exception("未对刀!")

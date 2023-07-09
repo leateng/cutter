@@ -92,7 +92,7 @@ class MainWindow(QMainWindow):
         generate_gcode.triggered.connect(self._open_gcode_dialog)
         toolbar.addAction(generate_gcode)
 
-        go_home = QAction(QIcon(QPixmap(":/images/location.png")), "回零", self)
+        go_home = QAction(QIcon(QPixmap(":/images/target.png")), "回零", self)
         go_home.triggered.connect(self._go_home)
         toolbar.addAction(go_home)
 
@@ -220,7 +220,7 @@ class MainWindow(QMainWindow):
 
     def _open_recipe_dialog(self):
         dlg = RecipeDialg(self)
-        dlg.resize(1200, 800)
+        dlg.resize(1200, 600)
         dlg.exec()
 
     def _open_users_management(self):

@@ -72,21 +72,24 @@ class JoyButton(QPushButton):
                 width: 98px;
                 height: 98px;
                 border-radius: 50px;
-                background-color: rgb(255, 170, 127);
-                border: 1px solid rgb(255, 170, 127);
-                color: white;
+                image: url(:/images/button-bg.png);
+                border: 0px;
+                
             }
             QPushButton:hover{
-                border: 1px double rgb(255, 85, 0);
+                color: white;
             }
             QPushButton:pressed{
-                background-color: rgb(255, 85, 0);
-                border: 1px solid rgb(255, 85, 0);
+               color: rgb(255, 0, 0);
             }
                            """
         )
         self.pressed.connect(self.on_button_pressed)
         self.released.connect(self.on_button_released)
+
+        # Styling
+        # iconsstyling_icon=qta.icon('fa5s.music',active='fa5s.balance-scale',color='blue',color_active='orange')
+        # music_button=QtGui.QPushButton(styling_icon,'Styling')
 
     def send_move_instruction(self, name, value, val_type):
         if PLC_CONN.is_open:
@@ -131,7 +134,9 @@ class JoyPad(QWidget):
         super().__init__(parent)
 
         self.button_up = JoyButton(
-            qta.icon("fa.angle-double-up", color="#525960"), True, "Z"
+            qta.icon("fa.angle-double-up", color="#525960"),
+            True,
+            "Z",
         )
         self.button_down = JoyButton(
             qta.icon("fa.angle-double-down", color="#525960"), False, "Z"
