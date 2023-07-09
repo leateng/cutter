@@ -13,5 +13,7 @@
     <file>images/menu.png</file>
     <file>images/dxf.png</file>
     <file>images/cutter.png</file>
+    <file>images/location.png</file>
+    <file>images/location2.png</file>
 </qresource>
 </RCC>

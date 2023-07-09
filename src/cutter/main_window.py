@@ -4,7 +4,7 @@ import pyads
 import qtawesome as qta
 from ezdxf.lldxf.const import DXFStructureError
 from qtpy.QtCore import QSize, Qt
-from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtGui import QIcon, QPixmap, QKeySequence
 from qtpy.QtWidgets import (
     QAction,
     QFileDialog,
@@ -21,6 +21,7 @@ from qtpy.QtWidgets import (
     QToolBar,
     QVBoxLayout,
     QWidget,
+    QShortcut,
 )
 
 import cutter.rc_images
@@ -48,12 +49,13 @@ class MainWindow(QMainWindow):
         self._init_toolbar()
         self._init_layout()
         self.setWindowIcon(QIcon(QPixmap(":/images/cutter.png")))
+        self._regist_fullscreen()
 
         # self._init_statusbar()
 
     def _init_toolbar(self):
         toolbar = QToolBar("My main toolbar")
-        toolbar.setIconSize(QSize(32, 32))
+        toolbar.setIconSize(QSize(48, 48))
         toolbar.setMovable(False)
         toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
         self.addToolBar(toolbar)
@@ -90,7 +92,7 @@ class MainWindow(QMainWindow):
         generate_gcode.triggered.connect(self._open_gcode_dialog)
         toolbar.addAction(generate_gcode)
 
-        go_home = QAction(QIcon(QPixmap(":/images/gcode.png")), "回零", self)
+        go_home = QAction(QIcon(QPixmap(":/images/location.png")), "回零", self)
         go_home.triggered.connect(self._go_home)
         toolbar.addAction(go_home)
 
@@ -283,6 +285,7 @@ class MainWindow(QMainWindow):
             gcode = generator.generate()
         except Exception as e:
             QMessageBox.warning(self, "Warning", e.args[0])
+            # @todo
             raise e
             return
 
@@ -299,3 +302,20 @@ class MainWindow(QMainWindow):
 
     def _unimplement(self):
         QMessageBox.warning(self, "Warning", "开发中")
+
+    def _regist_fullscreen(self):
+        self.toggle_fullscreen_shortcut = QShortcut(QKeySequence(Qt.Key_F11), self)
+        self.toggle_fullscreen_shortcut.activated.connect(self._toggle_fullscreen)
+
+        self.exit_fullscreen_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        self.exit_fullscreen_shortcut.activated.connect(self._exit_fullscreen)
+
+    def _toggle_fullscreen(self):
+        if self.isFullScreen():
+            self.showNormal()
+        else:
+            self.showFullScreen()
+
+    def _exit_fullscreen(self):
+        if self.isFullScreen():
+            self.showNormal()
