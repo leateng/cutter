@@ -13,6 +13,7 @@ from qtpy.QtGui import QPen
 from qtpy.QtGui import QPolygonF
 from qtpy.QtGui import QTransform
 from qtpy.QtGui import QWheelEvent
+from qtpy.QtGui import QImage
 from qtpy.QtWidgets import QAction
 from qtpy.QtWidgets import QApplication
 from qtpy.QtWidgets import QFileDialog
@@ -115,6 +116,18 @@ class CADGraphicsView(QGraphicsView):
             painter.setPen(Qt.GlobalColor.white)
             painter.drawText(r.center(), "Loading...")
             painter.restore()
+
+    def saveAsImage(self, name: str) -> None:
+        view = self.view.clone
+        self.scene().setSceneRect(self.scene().itemsBoundingRect())
+        image = QImage(self.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
+        image.fill(Qt.transparent)
+
+        painter = QPainter(image)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.scene().render(painter)
+        image.save(f"D:\\{name}")
+        painter.end()
 
 
 class DxfEntityScence(QGraphicsScene):

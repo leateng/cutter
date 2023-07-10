@@ -18,6 +18,7 @@
     <file>images/target.png</file>
     <file>images/target2.png</file>  
     <file>images/button-bg.png</file>
+    <file>images/button-bg2.png</file>
     <file>images/add.png</file>  
 </qresource>
 </RCC>

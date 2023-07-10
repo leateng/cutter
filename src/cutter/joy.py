@@ -69,18 +69,20 @@ class JoyButton(QPushButton):
             """
             QPushButton{
                 font-size: 50px;
-                width: 98px;
-                height: 98px;
+                width: 100px;
+                height: 100px;
                 border-radius: 50px;
                 image: url(:/images/button-bg.png);
                 border: 0px;
                 
             }
             QPushButton:hover{
-                color: white;
+                image: url(:/images/button-bg2.png);
+                border: 0px;
             }
             QPushButton:pressed{
-               color: rgb(255, 0, 0);
+                image: url(:/images/button-bg.png);
+                border: 0px;
             }
                            """
         )

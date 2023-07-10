@@ -7,7 +7,7 @@ from ezdxf.lldxf.const import DXFStructureError
 from qtpy import QtCore
 from qtpy.QtGui import QIcon
 from qtpy.QtGui import QPixmap
-from qtpy.QtWidgets import QComboBox
+from qtpy.QtWidgets import QApplication, QComboBox
 from qtpy.QtWidgets import QDialog
 from qtpy.QtWidgets import QFormLayout
 from qtpy.QtWidgets import QGroupBox
@@ -18,7 +18,7 @@ from qtpy.QtWidgets import QListView
 from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout, QHBoxLayout
-from qtpy.QtWidgets import QWidget, QFileDialog, QMessageBox
+from qtpy.QtWidgets import QWidget, QFileDialog, QMessageBox, QStyle
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 
@@ -43,17 +43,21 @@ class RecipeDialg(QDialog):
         self.scene = DxfEntityScence([])
 
         self._layout = QHBoxLayout(self)
-        self.search_edit = QLineEdit(self)
-        self.recipe_list = QListView(self)
+        self.search_edit = QLineEdit()
+        self.recipe_list = QListView()
         self.tool_radius = QSpinBox()
         self.cutter_offset = QSpinBox()
         self.rotation_speed = QSpinBox()
         self.load_dxf_button = QPushButton(QIcon(":/images/add.png"), "")
         self.load_dxf_button.clicked.connect(self._select_doc)
+        self.recipe_name = QLineEdit()
+        self.origin_filename = QLabel()
+        self.created_by = QLabel()
+        self.created_at = QLabel()
 
         # left layout
-        left_layout = QVBoxLayout(self)
-        search_layout = QHBoxLayout(self)
+        left_layout = QVBoxLayout()
+        search_layout = QHBoxLayout()
         search_layout.addWidget(self.load_dxf_button)
         search_layout.addWidget(self.search_edit)
         left_layout.addLayout(search_layout)
@@ -69,27 +73,38 @@ class RecipeDialg(QDialog):
 
         # recipe info
         recipe_info_layout = QFormLayout()
-        recipe_info_layout.addRow(QLabel("配方名"), self.tool_radius)
-        recipe_info_layout.addRow(QLabel("文件名"), self.cutter_offset)
-        recipe_info_layout.addRow(QLabel("創建人"), self.rotation_speed)
-        recipe_info_layout.addRow(QLabel("創建時間"), self.rotation_speed)
+        recipe_info_layout.addRow(QLabel("配方名"), self.recipe_name)
+        recipe_info_layout.addRow(QLabel("文件名"), self.origin_filename)
+        recipe_info_layout.addRow(QLabel("创建人"), self.created_by)
+        recipe_info_layout.addRow(QLabel("创建时间"), self.created_at)
         recipe_info_layout_group = QGroupBox("配方信息")
         recipe_info_layout_group.setLayout(recipe_info_layout)
 
+        # info layout
+        info_layout = QHBoxLayout()
+        info_layout.addWidget(recipe_info_layout_group)
+        info_layout.addWidget(machine_param_group)
+        info_layout.setStretch(0, 2)
+        info_layout.setStretch(1, 1)
+
         # button
         self.add_button = QPushButton("保存")
+        self.add_button.setIcon(
+            QApplication.style().standardIcon(QStyle.SP_DialogOkButton)
+        )
+        self.add_button.clicked.connect(self.saveRecipe)
         self.del_button = QPushButton("删除")
-        self.add_button.clicked.connect(self._new_recipe)
+        self.del_button.setIcon(QApplication.style().standardIcon(QStyle.SP_TrashIcon))
         self.del_button.clicked.connect(self._delete_recipe)
         button_layout = QHBoxLayout()
         button_layout.addStretch()
-        button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.del_button)
+        button_layout.addWidget(self.add_button)
 
         # right layout
-        right_layout = QVBoxLayout(self)
+        right_layout = QVBoxLayout()
         right_layout.addWidget(self.view)
-        right_layout.addWidget(machine_param_group)
+        right_layout.addLayout(info_layout)
         right_layout.addLayout(button_layout)
 
         self._layout.addLayout(left_layout)
@@ -97,9 +112,8 @@ class RecipeDialg(QDialog):
         self._layout.setStretch(0, 1)
         self._layout.setStretch(1, 2)
 
-    def _new_recipe(self):
-        dlg = EditRecipeDialg(self)
-        dlg.show()
+    def saveRecipe(self):
+        self.view.saveAsImage("test.png")
 
     def _delete_recipe(self):
         pass

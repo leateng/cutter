@@ -120,12 +120,26 @@
 #     window.show()
 #     sys.exit(app.exec_())
 
-#=======================================================================================
+# =======================================================================================
 import sys
-from PySide2.QtCore import Qt, QRectF
-from PySide2.QtWidgets import QApplication, QGraphicsView, QGraphicsScene, QMainWindow, QVBoxLayout, QWidget, QGraphicsItem, QGraphicsLineItem, QGraphicsEllipseItem, QGraphicsSimpleTextItem, QGraphicsPathItem, QGraphicsPolygonItem
+from PySide2.QtCore import Qt, QRectF, QSize
+from PySide2.QtWidgets import (
+    QApplication,
+    QGraphicsView,
+    QGraphicsScene,
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
+    QGraphicsItem,
+    QGraphicsLineItem,
+    QGraphicsEllipseItem,
+    QGraphicsSimpleTextItem,
+    QGraphicsPathItem,
+    QGraphicsPolygonItem,
+)
 from PySide2.QtGui import QPainter
 import ezdxf
+from qtpy.QtGui import QImage
 
 
 class DXFViewer(QGraphicsView):
@@ -155,7 +169,14 @@ class DXFViewer(QGraphicsView):
         msp = doc.modelspace()
 
         for entity in msp:
-            if entity.dxftype() in ['LINE', 'ARC', 'CIRCLE', 'POLYLINE', 'LWPOLYLINE', 'INSERT']:
+            if entity.dxftype() in [
+                "LINE",
+                "ARC",
+                "CIRCLE",
+                "POLYLINE",
+                "LWPOLYLINE",
+                "INSERT",
+            ]:
                 self.draw_entity(entity)
 
         self.setSceneRect(self.scene().itemsBoundingRect())
@@ -165,33 +186,39 @@ class DXFViewer(QGraphicsView):
         self.scene().addItem(item)
 
     def dxf_entity_to_qgraphicsitem(self, entity):
-        if entity.dxftype() == 'LINE':
+        if entity.dxftype() == "LINE":
             start_point = entity.dxf.start
             end_point = entity.dxf.end
-            line = QGraphicsLineItem(start_point[0], -start_point[1], end_point[0], -end_point[1])
+            line = QGraphicsLineItem(
+                start_point[0], -start_point[1], end_point[0], -end_point[1]
+            )
             return line
-        elif entity.dxftype() == 'ARC':
+        elif entity.dxftype() == "ARC":
             center = entity.dxf.center
             radius = entity.dxf.radius
             start_angle = entity.dxf.start_angle
             end_angle = entity.dxf.end_angle
-            arc = QGraphicsEllipseItem(center[0]-radius, -(center[1]-radius), radius*2, radius*2)
+            arc = QGraphicsEllipseItem(
+                center[0] - radius, -(center[1] - radius), radius * 2, radius * 2
+            )
             arc.setStartAngle(-start_angle * 16)
             arc.setSpanAngle(-(end_angle - start_angle) * 16)
             return arc
-        elif entity.dxftype() == 'CIRCLE':
+        elif entity.dxftype() == "CIRCLE":
             center = entity.dxf.center
             radius = entity.dxf.radius
-            circle = QGraphicsEllipseItem(center[0]-radius, -(center[1]-radius), radius*2, radius*2)
+            circle = QGraphicsEllipseItem(
+                center[0] - radius, -(center[1] - radius), radius * 2, radius * 2
+            )
             return circle
-        elif entity.dxftype() == 'POLYLINE':
+        elif entity.dxftype() == "POLYLINE":
             polyline = QGraphicsPolygonItem()
             points = []
             for vertex in entity.vertices():
                 points.append((vertex.dxf.location[0], vertex.dxf.location[1]))
             polyline.setPolygon(QPolygonF(points))
             return polyline
-        elif entity.dxftype() == 'LWPOLYLINE':
+        elif entity.dxftype() == "LWPOLYLINE":
             polyline = QGraphicsPathItem()
             path = QPainterPath()
             for i, vertex in enumerate(entity.vertices()):
@@ -206,14 +233,27 @@ class DXFViewer(QGraphicsView):
         else:
             return None
 
+    def save_image(self, name):
+        self.scene().clearSelection()
+        # self.scene().setSceneRect(self.scene().itemsBoundingRect())
+        # image = QImage(self.scene().sceneRect().size().toSize(), QImage.Format_ARGB32)
+        self.scene().setSceneRect(QRectF(0, 0, 100, 100))
+        image = QImage(QSize(100, 100), QImage.Format_ARGB32)
+        image.fill(Qt.transparent)
 
-if __name__ == '__main__':
+        painter = QPainter(image)
+        self.scene().render(painter)
+        image.save(f"D:\\{name}")
+
+
+if __name__ == "__main__":
     app = QApplication(sys.argv)
     main_win = QMainWindow()
     main_widget = QWidget()
     main_layout = QVBoxLayout(main_widget)
 
-    dxf_viewer = DXFViewer('dxf-examples/gb.dxf')
+    dxf_viewer = DXFViewer("dxf-examples/gb.dxf")
+    dxf_viewer.save_image("dxf.png")
     main_layout.addWidget(dxf_viewer)
 
     main_win.setCentralWidget(main_widget)
