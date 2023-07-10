@@ -134,49 +134,50 @@ class JoyButton(QPushButton):
 class JoyPad(QWidget):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
+        icon_text_color = "#525960"
 
         self.button_up = JoyButton(
-            qta.icon("fa.angle-double-up", color="#525960"),
+            qta.icon("fa.angle-double-up", color=icon_text_color),
             True,
             "Z",
         )
         self.button_down = JoyButton(
-            qta.icon("fa.angle-double-down", color="#525960"), False, "Z"
+            qta.icon("fa.angle-double-down", color=icon_text_color), False, "Z"
         )
 
         self.button_slow_up = JoyButton(
-            qta.icon("fa.angle-up", color="#525960"), True, "Z", True
+            qta.icon("fa.angle-up", color=icon_text_color), True, "Z", True
         )
         self.button_slow_down = JoyButton(
-            qta.icon("fa.angle-down", color="#525960"), False, "Z", True
+            qta.icon("fa.angle-down", color=icon_text_color), False, "Z", True
         )
 
         self.button_right = JoyButton(
-            qta.icon("fa.angle-double-right", color="#525960"), True, "X"
+            qta.icon("fa.angle-double-right", color=icon_text_color), True, "X"
         )
         self.button_left = JoyButton(
-            qta.icon("fa.angle-double-left", color="#525960"), False, "X"
+            qta.icon("fa.angle-double-left", color=icon_text_color), False, "X"
         )
 
         self.button_slow_right = JoyButton(
-            qta.icon("fa.angle-right", color="#525960"), True, "X", True
+            qta.icon("fa.angle-right", color=icon_text_color), True, "X", True
         )
         self.button_slow_left = JoyButton(
-            qta.icon("fa.angle-left", color="#525960"), False, "X", True
+            qta.icon("fa.angle-left", color=icon_text_color), False, "X", True
         )
 
         self.button_forward = JoyButton(
-            qta.icon("fa.angle-double-up", color="#525960"), True, "Y"
+            qta.icon("fa.angle-double-up", color=icon_text_color), True, "Y"
         )
         self.button_back = JoyButton(
-            qta.icon("fa.angle-double-down", color="#525960"), False, "Y"
+            qta.icon("fa.angle-double-down", color=icon_text_color), False, "Y"
         )
 
         self.button_slow_forward = JoyButton(
-            qta.icon("fa.angle-up", color="#525960"), True, "Y", True
+            qta.icon("fa.angle-up", color=icon_text_color), True, "Y", True
         )
         self.button_slow_back = JoyButton(
-            qta.icon("fa.angle-down", color="#525960"), False, "Y", True
+            qta.icon("fa.angle-down", color=icon_text_color), False, "Y", True
         )
 
         z_button_layout = QVBoxLayout()
