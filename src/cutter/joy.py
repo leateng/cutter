@@ -134,7 +134,8 @@ class JoyButton(QPushButton):
 class JoyPad(QWidget):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
-        icon_text_color = "#525960"
+        # icon_text_color = "#525960"
+        icon_text_color = "#1C1C1B"
 
         self.button_up = JoyButton(
             qta.icon("fa.angle-double-up", color=icon_text_color),

@@ -42,6 +42,26 @@ def init_db():
         ret = query.exec_()
         print(f"insert root user: {ret}")
 
+    if "recipes" not in tables:
+        ret = query.exec_(
+            """
+            CREATE TABLE recipes (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              name VARCHAR,
+              file_name VARCHAR,
+              file_content BLOB,
+              tool_radius REAL,
+              offset REAL,
+              rotation_speed INTEGER,
+              created_by INTEGER,
+              created_at TIMESTAMP,
+              updated_by INTEGER,
+              updated_at TIMESTAMP
+            )
+            """
+        )
+        print(f"insert recipes table: {ret}")
+
 
 def validate_login(name, password):
     query = QSqlQuery(DB_CONN)
@@ -108,7 +128,9 @@ def create_user(user):
 def update_user(user):
     query = QSqlQuery(DB_CONN)
     if user._password is not None:
-        query.prepare("update users set name=?, role=?, password=?, department=? where id=?")
+        query.prepare(
+            "update users set name=?, role=?, password=?, department=? where id=?"
+        )
         query.addBindValue(user._name)
         query.addBindValue(user._role)
         query.addBindValue(user._password)

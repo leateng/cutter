@@ -61,9 +61,7 @@ class LoginDialog(QDialog):
         self.login_button.clicked.connect(self.validate_login)
         self.cancel_button.clicked.connect(self.reject)
 
-        # 设置对话框大小和最小尺寸
-        self.setFixedSize(300, 180)
-        self.setMinimumSize(300, 150)
+        self.setFixedSize(self.sizeHint())
 
     @Slot()
     def validate_login(self):
