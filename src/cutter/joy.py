@@ -4,7 +4,7 @@ import pyads
 import qtawesome as qta
 import qtpy.QtCore
 import qtpy.QtWidgets
-from qtpy.QtCore import QAbstractTableModel, QModelIndex, QSize, Qt, Slot
+from qtpy.QtCore import QSize, Qt
 from qtpy.QtGui import QBrush, QColor, QIcon, QPixmap
 from qtpy.QtWidgets import (
     QDialog,
@@ -120,14 +120,16 @@ class JoyButton(QPushButton):
         self.send_move_instruction(
             self.speed_instruction_name(), self.speed, pyads.PLCTYPE_LREAL
         )
-        self.send_move_instruction(self.instruction_name(), True, pyads.PLCTYPE_BOOL)
+        self.send_move_instruction(
+            self.instruction_name(), True, pyads.PLCTYPE_BOOL)
         self.send_move_instruction("GVL_HMI.bJog", True, pyads.PLCTYPE_BOOL)
 
     def on_button_released(self):
         print("Jog button released")
         self.press_status = False
 
-        self.send_move_instruction(self.instruction_name(), False, pyads.PLCTYPE_BOOL)
+        self.send_move_instruction(
+            self.instruction_name(), False, pyads.PLCTYPE_BOOL)
         self.send_move_instruction("GVL_HMI.bJog", False, pyads.PLCTYPE_BOOL)
 
 
@@ -326,10 +328,14 @@ class ABMoveWidget(QWidget):
             z = self.z_spinbox.value()
             print(f"absoulute move to: x={x}, y={y}, z={z}")
 
-            PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosX", x, pyads.PLCTYPE_LREAL)
-            PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosY", y, pyads.PLCTYPE_LREAL)
-            PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosZ", z, pyads.PLCTYPE_LREAL)
-            PLC_CONN.write_by_name("GVL_HMI.bAutoMove", True, pyads.PLCTYPE_BOOL)
+            PLC_CONN.write_by_name(
+                "GVL_HMI.lrAutoMovePosX", x, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name(
+                "GVL_HMI.lrAutoMovePosY", y, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name(
+                "GVL_HMI.lrAutoMovePosZ", z, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name("GVL_HMI.bAutoMove",
+                                   True, pyads.PLCTYPE_BOOL)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 

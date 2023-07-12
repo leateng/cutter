@@ -50,6 +50,7 @@ def init_db():
               name VARCHAR,
               file_name VARCHAR,
               file_content BLOB,
+              thumbnail BLOB,
               tool_radius REAL,
               offset REAL,
               rotation_speed INTEGER,

@@ -7,6 +7,7 @@ PLC_CONN = pyads.Connection(PLC_ADDR, 851)
 
 def init_plc_conn():
     try:
+        # PLC_CONN.set_timeout(100)
         PLC_CONN.open()
     except RuntimeError as e:
         print("open PLC connection failed")
