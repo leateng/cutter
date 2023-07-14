@@ -20,7 +20,10 @@ from qtpy.QtWidgets import QSpinBox
 from qtpy.QtWidgets import QVBoxLayout, QHBoxLayout
 from qtpy.QtWidgets import QWidget, QFileDialog, QMessageBox, QStyle
 from cutter.consts import SUPPORTED_ENTITY_TYPES
+import cutter.consts as g
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
+from datetime import datetime
+from pathlib import Path
 
 
 class RecipeCombo(QComboBox):
@@ -94,7 +97,9 @@ class RecipeDialg(QDialog):
         )
         self.add_button.clicked.connect(self.saveRecipe)
         self.del_button = QPushButton("删除")
-        self.del_button.setIcon(QApplication.style().standardIcon(QStyle.SP_TrashIcon))
+        self.del_button.setIcon(
+            QApplication.style().standardIcon(QStyle.SP_DialogCancelButton)
+        )
         self.del_button.clicked.connect(self._delete_recipe)
         button_layout = QHBoxLayout()
         button_layout.addStretch()
@@ -113,7 +118,13 @@ class RecipeDialg(QDialog):
         self._layout.setStretch(1, 2)
 
     def saveRecipe(self):
-        self.view.saveAsImage("test.png")
+        recipe_name = self.recipe_name.text()
+        origin_filename = self.origin_filename.text()
+        created_by = g.CURRENT_USER._id
+        created_at = datetime.now()
+        tool_radius = self.tool_radius.value()
+        cutter_offset = self.cutter_offset.value()
+        rotation_speed = self.rotation_speed.value()
 
     def _delete_recipe(self):
         pass
@@ -138,7 +149,13 @@ class RecipeDialg(QDialog):
                 else:
                     auditor = doc.audit()
 
+                pypath = Path(path)
                 self.set_document(doc, auditor, True)
+                self.recipe_name.setText(pypath.stem)
+                self.origin_filename.setText(pypath.name)
+                self.created_by.setText(g.CURRENT_USER._name)
+                self.created_at.setText(
+                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             except IOError as e:
                 self.origin_path = None
                 QMessageBox.critical(self, "Loading Error", str(e))

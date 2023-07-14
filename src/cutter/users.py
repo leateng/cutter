@@ -35,6 +35,7 @@ from qtpy.QtWidgets import QPushButton
 from qtpy.QtWidgets import QTableView
 from qtpy.QtWidgets import QTextEdit
 from qtpy.QtWidgets import QVBoxLayout
+from qtpy.QtWidgets import QStyle
 
 
 class UserModel(QAbstractTableModel):
@@ -118,7 +119,8 @@ class UsersGridView(QTableView):
         super().__init__(parent)
 
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         # self.setColumnWidth(0, 200)
         # self.setColumnWidth(1, 200)
@@ -127,11 +129,14 @@ class UsersGridView(QTableView):
         # self.verticalHeader().show()
         self.setSortingEnabled(True)
 
+
 class UserFormDialog(QDialog):
     saveUser = Signal(User)
 
     def __init__(
-        self, user: Optional[User] = None, parent: Optional[qtpy.QtWidgets.QWidget] = None
+        self,
+        user: Optional[User] = None,
+        parent: Optional[qtpy.QtWidgets.QWidget] = None,
     ) -> None:
         super().__init__(parent)
         if user is None:
@@ -203,8 +208,8 @@ class UsersDialog(QDialog):
         self.usersView = UsersGridView()
         self.usersView.setModel(self.usersModel)
         self.addUserButton = QPushButton("Add")
+        self.addUserButton.setIcon(QIcon(":/images/add.png"))
         self.deleteUserButton = QPushButton("Delete")
-
 
         action_layout = QHBoxLayout()
         action_layout.addStretch(1)

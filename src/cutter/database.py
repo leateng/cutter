@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from cutter.models import User
+from cutter.models import Recipe, User
 from qtpy.QtSql import QSqlDatabase
 from qtpy.QtSql import QSqlQuery
 
@@ -66,7 +66,8 @@ def init_db():
 
 def validate_login(name, password):
     query = QSqlQuery(DB_CONN)
-    query.prepare("SELECT * FROM users WHERE name = :name and password = :password")
+    query.prepare(
+        "SELECT * FROM users WHERE name = :name and password = :password")
     query.bindValue(":name", name)
     query.bindValue(":password", password)
     if not query.exec_():
@@ -138,7 +139,8 @@ def update_user(user):
         query.addBindValue(user._department)
         query.addBindValue(user._id)
     else:
-        query.prepare("update users set name=?, role=?, department=? where id=?")
+        query.prepare(
+            "update users set name=?, role=?, department=? where id=?")
         query.addBindValue(user._name)
         query.addBindValue(user._role)
         query.addBindValue(user._department)
@@ -157,3 +159,82 @@ def delete_user(id):
         ret = query.exec_()
         print(f"delete user: {ret}")
         ret
+
+
+# id=None,
+# name=None,
+# file_name=None,
+# file_content=None,
+# thumbnail=None,
+# tool_radius=None,
+# offset=None,
+# rotation_speed=None,
+# created_by=None,
+# created_at=None,
+# updated_by=None,
+# updated_at=None,
+def create_recipe(recipe: Recipe) -> bool:
+    query = QSqlQuery(DB_CONN)
+    query.prepare(
+        """
+        INSERT INTO recipes(name, file_name, file_content, thumbnail, tool_radius, offset, rotation_speed, created_by, created_at, updated_by, updated_at)
+        VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+    )
+    query.addBindValue(recipe._name)
+    query.addBindValue(recipe._file_name)
+    query.addBindValue(recipe._file_content)
+    query.addBindValue(recipe._thumbnail)
+    query.addBindValue(recipe._tool_radius)
+    query.addBindValue(recipe._offset)
+    query.addBindValue(recipe._rotation_speed)
+    query.addBindValue(recipe._created_by)
+    query.addBindValue(str(datetime.now()))
+    query.addBindValue(recipe._updated_by)
+    query.addBindValue(str(datetime.now()))
+    ret = query.exec_()
+    print(f"insert recipe: {ret}")
+    return ret
+
+
+def update_recipe(recipe: Recipe) -> bool:
+    query = QSqlQuery(DB_CONN)
+    query.prepare(
+        """
+      update recipes
+      set name=?,
+          file_name=?,
+          file_content=?,
+          thumbnail=?,
+          tool_radius=?,
+          offset=?,
+          rotation_speed=?,
+          updated_by=?,
+          updated_at=?,
+          where id=?
+    """
+    )
+    query.addBindValue(recipe._name)
+    query.addBindValue(recipe._file_name)
+    query.addBindValue(recipe._file_content)
+    query.addBindValue(recipe._thumbnail)
+    query.addBindValue(recipe._tool_radius)
+    query.addBindValue(recipe._offset)
+    query.addBindValue(recipe._rotation_speed)
+    query.addBindValue(recipe._updated_by)
+    query.addBindValue(str(datetime.now()))
+    query.addBindValue(recipe._id)
+
+    return query.exec_()
+
+
+def delete_recipe(id: int) -> bool:
+    query = QSqlQuery(DB_CONN)
+    ret = False
+    if id is not None:
+        query.prepare("delete from recipes where id=?")
+        query.addBindValue(id)
+        ret = query.exec_()
+        print(f"delete recipe: {ret}")
+
+    return ret

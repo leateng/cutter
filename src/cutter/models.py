@@ -15,38 +15,32 @@ class User:
         self._department = department
         self._created_at = created_at
 
-    # def get_id(self):
-    #     return self._id
-    #
-    # def set_id(self, id):
-    #     self._id = id
-    #
-    # def get_name(self):
-    #     return self._name
-    #
-    # def set_name(self, name):
-    #     self._name = name
-    #
-    # def get_password(self):
-    #     return self._password
-    #
-    # def set_password(self, password):
-    #     self._password = password
-    #
-    # def get_role(self):
-    #     return self._role
-    #
-    # def set_role(self, role):
-    #     self._role = role
-    #
-    # def get_department(self):
-    #     return self._department
-    #
-    # def set_department(self, department):
-    #     self._department = department
-    #
-    # def get_created_at(self):
-    #     return self._created_at
-    #
-    # def set_created_at(self, created_at):
-    #     self._created_at = created_at
+
+class Recipe:
+    def __init__(
+        self,
+        id=None,
+        name=None,
+        file_name=None,
+        file_content=None,
+        thumbnail=None,
+        tool_radius=None,
+        offset=None,
+        rotation_speed=None,
+        created_by=None,
+        created_at=None,
+        updated_by=None,
+        updated_at=None,
+    ) -> None:
+        self._id = id
+        self._name = name
+        self._file_name = file_name
+        self._file_content = file_content
+        self._thumbnail = thumbnail
+        self._tool_radius = tool_radius
+        self._offset = offset
+        self._rotation_speed = rotation_speed
+        self._created_by = created_by
+        self._created_at = created_at
+        self._updated_by = updated_by
+        self._updated_at = updated_at
