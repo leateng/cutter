@@ -1,12 +1,14 @@
 import os
+
 import ezdxf
 import pyads
 import qtawesome as qta
 from ezdxf.lldxf.const import DXFStructureError
 from qtpy.QtCore import QSize, Qt
-from qtpy.QtGui import QIcon, QPixmap, QKeySequence
+from qtpy.QtGui import QIcon, QKeySequence, QPixmap
 from qtpy.QtWidgets import (
     QAction,
+    QDoubleSpinBox,
     QFileDialog,
     QFormLayout,
     QGroupBox,
@@ -14,6 +16,7 @@ from qtpy.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QShortcut,
     QSizePolicy,
     QSpinBox,
     QSplitter,
@@ -21,22 +24,20 @@ from qtpy.QtWidgets import (
     QToolBar,
     QVBoxLayout,
     QWidget,
-    QShortcut,
 )
 
-import cutter.rc_images
 from cutter.about_dialog import AboutUsDialog
+from cutter.axis_timer import axis_timer
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
 from cutter.gcode import GCode
 from cutter.gcode_dialog import GCodeDialog
 from cutter.joy import JoyDialog
+from cutter.machine_info import MachineInfo
 from cutter.plc import PLC_CONN
 from cutter.recipe import RecipeCombo, RecipeDialg
 from cutter.users import UsersDialog
-from cutter.axis_timer import axis_timer
-from cutter.machine_info import MachineInfo
 
 
 class MainWindow(QMainWindow):
@@ -120,24 +121,16 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.main_splitter)
         self.recipe_combox = RecipeCombo()
         self.entity_tree = EntityTree()
-        self.tool_radius = QSpinBox()
-        self.cutter_offset = QSpinBox()
+        self.tool_radius = QDoubleSpinBox()
+        self.cutter_offset = QDoubleSpinBox()
         self.rotation_speed = QSpinBox()
 
         machine_param_layout = QFormLayout()
-        machine_param_layout.addRow(QLabel("刀具半径"), self.tool_radius)
-        machine_param_layout.addRow(QLabel("偏移量"), self.cutter_offset)
-        machine_param_layout.addRow(QLabel("转速"), self.rotation_speed)
+        machine_param_layout.addRow(QLabel("刀具半径(mm)"), self.tool_radius)
+        machine_param_layout.addRow(QLabel("偏移量(mm)"), self.cutter_offset)
+        machine_param_layout.addRow(QLabel("转速(rpm)"), self.rotation_speed)
         machine_param_group = QGroupBox("参数")
         machine_param_group.setLayout(machine_param_layout)
-
-        # machine_info_layout = QFormLayout()
-        # plc_status = "已连接" if PLC_CONN.is_open else "断开"
-        # machine_info_layout.addRow(QLabel("连接状态"), QLabel(plc_status))
-        # machine_info_layout.addRow(QLabel("坐标"), QLabel("X: 12 Y: 11 Z: 22"))
-        # machine_info_layout.addRow(QLabel("转速"), QLabel("5000"))
-        # machine_info_group = QGroupBox("机器信息")
-        # machine_info_group.setLayout(machine_info_layout)
 
         machine_info_layout = QVBoxLayout()
         machine_info_layout.addWidget(self.machine_info)
@@ -145,7 +138,6 @@ class MainWindow(QMainWindow):
         machine_info_group.setLayout(machine_info_layout)
 
         left_layout = QVBoxLayout()
-        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         recipe_layout = QFormLayout()
         recipe_icon = QLabel("选择配方")
         recipe_icon.setPixmap(qta.icon("ei.th-list", color="#525960").pixmap(20, 20))
@@ -164,7 +156,6 @@ class MainWindow(QMainWindow):
 
         self.main_splitter.addWidget(left_widget)
         self.main_splitter.addWidget(right_widget)
-        # self.setFixedSize(self.size())
 
         # 设置左侧宽度
         sizes = [400, 1000]
@@ -201,7 +192,7 @@ class MainWindow(QMainWindow):
                 )
 
     def set_document(self, doc, auditor):
-        mps = doc.modelspace()
+        doc.modelspace()
         self.doc = doc
         self.dxf_entities = doc.modelspace().query(" ".join(SUPPORTED_ENTITY_TYPES))
 
@@ -245,7 +236,12 @@ class MainWindow(QMainWindow):
 
         gcode = ""
         try:
-            generator = GCode(self.dxf_entities)
+            tool_radius = self.tool_radius.value()
+            cutter_offset = self.cutter_offset.value()
+            rotation_speed = self.rotation_speed.value()
+            generator = GCode(
+                self.dxf_entities, tool_radius, cutter_offset, rotation_speed
+            )
             gcode = generator.generate()
         except Exception as e:
             QMessageBox.warning(self, "Warning", e.args[0])
@@ -281,7 +277,12 @@ class MainWindow(QMainWindow):
     def _open_gcode_dialog(self):
         gcode = ""
         try:
-            generator = GCode(self.dxf_entities)
+            tool_radius = self.tool_radius.value()
+            cutter_offset = self.cutter_offset.value()
+            rotation_speed = self.rotation_speed.value()
+            generator = GCode(
+                self.dxf_entities, tool_radius, cutter_offset, rotation_speed
+            )
             gcode = generator.generate()
         except Exception as e:
             QMessageBox.warning(self, "Warning", e.args[0])

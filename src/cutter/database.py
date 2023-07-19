@@ -1,9 +1,8 @@
 from datetime import datetime
 
-from cutter.models import Recipe, User
-from qtpy.QtSql import QSqlDatabase
-from qtpy.QtSql import QSqlQuery
+from qtpy.QtSql import QSqlDatabase, QSqlQuery
 
+from cutter.models import Recipe, User
 
 DB_CONN = QSqlDatabase.addDatabase("QSQLITE")
 DB_CONN.setDatabaseName("cutter.db")
@@ -66,8 +65,7 @@ def init_db():
 
 def validate_login(name, password):
     query = QSqlQuery(DB_CONN)
-    query.prepare(
-        "SELECT * FROM users WHERE name = :name and password = :password")
+    query.prepare("SELECT * FROM users WHERE name = :name and password = :password")
     query.bindValue(":name", name)
     query.bindValue(":password", password)
     if not query.exec_():
@@ -139,8 +137,7 @@ def update_user(user):
         query.addBindValue(user._department)
         query.addBindValue(user._id)
     else:
-        query.prepare(
-            "update users set name=?, role=?, department=? where id=?")
+        query.prepare("update users set name=?, role=?, department=? where id=?")
         query.addBindValue(user._name)
         query.addBindValue(user._role)
         query.addBindValue(user._department)
