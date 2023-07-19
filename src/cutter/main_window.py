@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
         self.tool_radius = QDoubleSpinBox()
         self.cutter_offset = QDoubleSpinBox()
         self.rotation_speed = QSpinBox()
+        self.rotation_speed.setRange(0, 6000)
 
         machine_param_layout = QFormLayout()
         machine_param_layout.addRow(QLabel("刀具半径(mm)"), self.tool_radius)
