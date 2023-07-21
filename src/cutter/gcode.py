@@ -1,4 +1,5 @@
 from ezdxf.math import BoundingBox, Vec3
+from IPython import embed
 
 from cutter.consts import ALIGNMENT
 
@@ -14,6 +15,20 @@ class GCode:
         self.cutter_offset = cutter_offset
         self.rotation_speed = rotation_speed
         self.instructions = []
+
+    def generate(self) -> str:
+        self.check_entities()
+        self.check_alignment()
+
+        self.translate_entities()
+
+        self.prepare_instructions()
+        self.draw_entities()
+
+        # self.fast_move_z(15)
+        self.end_instructions()
+
+        return "\n".join(self.instructions)
 
     def prepare_instructions(self):
         self.instructions.append("G90 (Absolute programming)")
@@ -65,7 +80,10 @@ class GCode:
         )
 
     def draw_line_and_arc(self):
-        pass
+        entity1, entity2 = self.get_start_point_entity()
+        embed()
+        print(f"start_entity={entity}")
+        print(f"start_point={start_point}")
 
     def move_xy(self, x, y):
         self.instructions.append("G01 X{:.1f} Y{:.1f}".format(x, y))
@@ -82,24 +100,10 @@ class GCode:
     def safe_height(self):
         return float(ALIGNMENT["z"]) + 10
 
-    def generate(self) -> str:
-        self.check_entities()
-        self.check_alignment()
-
-        self.translate_entities()
-
-        self.prepare_instructions()
-        self.draw_entities()
-
-        # self.fast_move_z(15)
-        self.end_instructions()
-
-        return "\n".join(self.instructions)
-
     def check_alignment(self):
-        # ALIGNMENT["x"] = 0
-        # ALIGNMENT["y"] = 0
-        # ALIGNMENT["z"] = 0
+        ALIGNMENT["x"] = 10
+        ALIGNMENT["y"] = 10
+        ALIGNMENT["z"] = 10
 
         if ALIGNMENT["x"] is None or ALIGNMENT["y"] is None or ALIGNMENT["z"] is None:
             raise Exception("未对刀!")
@@ -183,3 +187,52 @@ class GCode:
 
         for e in self.dxf_entities:
             e.translate(offset.x, offset.y, 0)
+
+    def get_start_point_entity(self):
+        entities_map = {}
+        dist_lines = []
+
+        for e in self.dxf_entities:
+            entities_map[e.dxf.handle] = e
+            if e.dxftype() == "LINE":
+                dist_lines.append((e, min(e.dxf.start.magnitude, e.dxf.end.magnitude)))
+            if e.dxftype() == "ARC":
+                dist_lines.append(
+                    (e, min(e.start_point.magnitude, e.end_point.magnitude))
+                )
+
+        dist_lines.sort(key=lambda x: x[1])
+
+        embed()
+        return (dist_lines[0][0], dist_lines[1][0])
+
+    def get_start_point(self, entity1, entity2):
+        pass
+
+    def get_next_entity(self, entity_id, point):
+        start_point = None
+        end_point = None
+
+        for e in self.dxf_entities:
+            if e.dxf.handle != entity_id:
+                if e.dxftype() == "LINE":
+                    start_point = e.dxf.start
+                    end_point = e.dxf.end
+
+                if e.dxftype() == "ARC":
+                    start_point = e.start_point
+                    end_point = e.end_point
+
+                if self.is_same_point(point, start_point):
+                    return (e, start_point, end_point)
+
+                if self.is_same_point(point, end_point):
+                    return (e, end_point, start_point)
+
+        return None
+
+    def is_same_point(self, p1, p2):
+        return p1.distance(p2) < 0.0001
+
+    def is_end(self, start_point, point):
+        return self.is_same_point(start_point, point)
