@@ -246,7 +246,7 @@ class MainWindow(QMainWindow):
             gcode = generator.generate()
         except Exception as e:
             QMessageBox.warning(self, "Warning", e.args[0])
-            raise e
+            # raise e
             return
 
         path = "c:\\TWinCAT\\Mc\\Nci\\cutter.nc"
@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "Warning", e.args[0])
             # @todo
-            raise e
+            # raise e
             return
 
         dlg = GCodeDialog(self, gcode)
