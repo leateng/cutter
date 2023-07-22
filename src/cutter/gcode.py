@@ -1,4 +1,5 @@
 from ezdxf.math import BoundingBox, Vec3
+from ezdxf import bbox
 
 # from IPython import embed
 
@@ -15,6 +16,7 @@ class GCode:
         self.cutter_offset = cutter_offset
         self.rotation_speed = rotation_speed
         self.instructions = []
+        self.bbox = bbox.extents(self.dxf_entities)
 
     def generate(self) -> str:
         self.check_tool_params()
@@ -100,6 +102,7 @@ class GCode:
                 self.move_xy(ep.x, ep.y)
 
             if entity.dxftype() == "ARC":
+                # embed()
                 center = entity.dxf.center
 
                 instruct = (
@@ -146,9 +149,9 @@ class GCode:
         self.instructions.append("G40")
 
     def check_alignment(self):
-        ALIGNMENT["x"] = 0
-        ALIGNMENT["y"] = 0
-        ALIGNMENT["z"] = 0
+        # ALIGNMENT["x"] = 10
+        # ALIGNMENT["y"] = 10
+        # ALIGNMENT["z"] = 10
 
         if ALIGNMENT["x"] is None or ALIGNMENT["y"] is None or ALIGNMENT["z"] is None:
             raise Exception("未对刀!")
@@ -201,26 +204,26 @@ class GCode:
         return BoundingBox([min_point, max_point])
 
     def get_arc_bounding_box(self, arc):
-        return BoundingBox([Vec3(0, 0, 0), Vec3(0, 0, 0)])
+        pass
 
     def bbox_min_point(self):
-        bboxs = []
-        for e in self.dxf_entities:
-            bboxs.append(self.get_entity_bbox(e))
+        # bboxs = []
+        # for e in self.dxf_entities:
+        #     bboxs.append(self.get_entity_bbox(e))
 
-        min_point = min(bboxs[0])
-        x = min_point.x
-        y = min_point.y
-        # embed()
-        for b in bboxs:
-            min_point = min(b)
-            if x > min_point.x:
-                x = min_point.x
+        # min_point = min(bboxs[0])
+        # x = min_point.x
+        # y = min_point.y
+        # # embed()
+        # for b in bboxs:
+        #     min_point = min(b)
+        #     if x > min_point.x:
+        #         x = min_point.x
 
-            if y > min_point.y:
-                y = min_point.y
+        #     if y > min_point.y:
+        #         y = min_point.y
 
-        return Vec3(x, y, 0)
+        return min(self.bbox)
 
     def calc_offset(self):
         alignment_x = ALIGNMENT["x"]
@@ -228,8 +231,8 @@ class GCode:
 
         min_point = self.bbox_min_point()
         print(f"min_point={min_point}")
-        offset_x = alignment_x - min_point.x
-        offset_y = alignment_y - min_point.y
+        offset_x = -(min_point.x - alignment_x)
+        offset_y = -(min_point.y - alignment_y)
 
         return Vec3(offset_x, offset_y, 0)
 
