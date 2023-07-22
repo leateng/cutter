@@ -1,5 +1,6 @@
 from ezdxf.math import BoundingBox, Vec3
-from IPython import embed
+
+# from IPython import embed
 
 from cutter.consts import ALIGNMENT
 
@@ -35,11 +36,11 @@ class GCode:
         self.instructions.append("G17 (XY plane)")
         # self.instructions.append("G40 (Cancel radius comp)")
         self.instructions.append(
-            "G00 Z{:.1f} (z safe margin)".format(self.safe_height())
+            "G00 Z{:.3f} (z safe margin)".format(self.safe_height())
         )
         # self.instructions.append("T1 M6")
         self.instructions.append(
-            "#set ToolParam(1; 4; {:.1f})#".format(
+            "#set ToolParam(1; 4; {:.3f})#".format(
                 self.tool_radius - self.cutter_offset
             )
         )
@@ -48,7 +49,7 @@ class GCode:
 
     def end_instructions(self):
         self.instructions.append(
-            "G01 Z{:.1f} (z safe margin)".format(self.safe_height())
+            "G01 Z{:.3f} (z safe margin)".format(self.safe_height())
         )
         self.instructions.append("S0 M05")
         self.fast_move_xy(0, 0)
@@ -56,7 +57,6 @@ class GCode:
 
     def draw_entities(self):
         if len(self.dxf_entities) == 1 and self.dxf_entities[0].dxftype() == "CIRCLE":
-            self.instructions.append("G00 Z{:.1f} (cut deepth)".format(ALIGNMENT["z"]))
             self.draw_circle(self.dxf_entities[0])
         else:
             self.draw_line_and_arc()
@@ -71,31 +71,32 @@ class GCode:
 
         self.fast_move_xy(start.x, start.y - 10)
         self.instructions.append("F400")
+        self.instructions.append("G00 Z{:.3f} (cut deepth)".format(ALIGNMENT["z"]))
         self.move_xy(start.x, start.y)
         self.instructions.append(
-            "G03 X{:.1f} Y{:.1f} I{:.1f}  J{:.1f}".format(end.x, end.y, 0, radius)
+            "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(end.x, end.y, 0, radius)
         )
         self.instructions.append(
-            "G03 X{:.1f} Y{:.1f} I{:.1f}  J{:.1f}".format(start.x, start.y, 0, -radius)
+            "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(start.x, start.y, 0, -radius)
         )
 
     def draw_line_and_arc(self):
         entity1, entity2 = self.get_start_point_entity()
-        embed()
+        # embed()
         print(f"start_entity={entity}")
         print(f"start_point={start_point}")
 
     def move_xy(self, x, y):
-        self.instructions.append("G01 X{:.1f} Y{:.1f}".format(x, y))
+        self.instructions.append("G01 X{:.3f} Y{:.3f}".format(x, y))
 
     def move_z(self, z):
-        self.instructions.append("G01 Z{:.1f}".format(z))
+        self.instructions.append("G01 Z{:.3f}".format(z))
 
     def fast_move_xy(self, x, y):
-        self.instructions.append("G00 X{:.1f} Y{:.1f}".format(x, y))
+        self.instructions.append("G00 X{:.3f} Y{:.3f}".format(x, y))
 
     def fast_move_z(self, z):
-        self.instructions.append("G00 Z{:.1f}".format(z))
+        self.instructions.append("G00 Z{:.3f}".format(z))
 
     def safe_height(self):
         return float(ALIGNMENT["z"]) + 10
@@ -203,7 +204,7 @@ class GCode:
 
         dist_lines.sort(key=lambda x: x[1])
 
-        embed()
+        # embed()
         return (dist_lines[0][0], dist_lines[1][0])
 
     def get_start_point(self, entity1, entity2):
