@@ -1,29 +1,34 @@
-from typing import Optional
-
-import qtpy
-
-import ezdxf
-from ezdxf.lldxf.const import DXFStructureError
-from qtpy import QtCore
-from qtpy.QtGui import QIcon
-from qtpy.QtGui import QPixmap
-from qtpy.QtWidgets import QApplication, QComboBox
-from qtpy.QtWidgets import QDialog
-from qtpy.QtWidgets import QFormLayout
-from qtpy.QtWidgets import QGroupBox
-from qtpy.QtWidgets import QHBoxLayout
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLineEdit
-from qtpy.QtWidgets import QListView
-from qtpy.QtWidgets import QPushButton
-from qtpy.QtWidgets import QSpinBox
-from qtpy.QtWidgets import QVBoxLayout, QHBoxLayout
-from qtpy.QtWidgets import QWidget, QFileDialog, QMessageBox, QStyle
-from cutter.consts import SUPPORTED_ENTITY_TYPES
-import cutter.consts as g
-from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
+
+import ezdxf
+import qtpy
+from ezdxf.lldxf.const import DXFStructureError
+from qtpy import QtCore
+from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QDialog,
+    QFileDialog,
+    QFormLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QListView,
+    QMessageBox,
+    QPushButton,
+    QSpinBox,
+    QStyle,
+    QVBoxLayout,
+    QWidget,
+)
+
+import cutter.consts as g
+from cutter.cad_widget import CADGraphicsView, DxfEntityScence
+from cutter.consts import SUPPORTED_ENTITY_TYPES
 
 
 class RecipeCombo(QComboBox):
@@ -120,7 +125,7 @@ class RecipeDialg(QDialog):
     def saveRecipe(self):
         recipe_name = self.recipe_name.text()
         origin_filename = self.origin_filename.text()
-        created_by = g.CURRENT_USER._id
+        created_by = g.CURRENT_USER._id if g.CURRENT_USER is not None else None
         created_at = datetime.now()
         tool_radius = self.tool_radius.value()
         cutter_offset = self.cutter_offset.value()
@@ -130,8 +135,7 @@ class RecipeDialg(QDialog):
         pass
 
     def _edit_recipe(self):
-        dlg = EditRecipeDialg(self)
-        dlg.show()
+        pass
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -154,8 +158,7 @@ class RecipeDialg(QDialog):
                 self.recipe_name.setText(pypath.stem)
                 self.origin_filename.setText(pypath.name)
                 self.created_by.setText(g.CURRENT_USER._name)
-                self.created_at.setText(
-                    datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+                self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             except IOError as e:
                 self.origin_path = None
                 QMessageBox.critical(self, "Loading Error", str(e))
@@ -183,10 +186,3 @@ class RecipeDialg(QDialog):
         # # draw entity tree
         # # self.entity_tree = EntityTree(self.dxf_entities)
         # self.entity_tree.set_entities(self.dxf_entities)
-
-
-class EditRecipeDialg(QDialog):
-    def __init__(self, parent: Optional[QWidget] = None, recipe=None) -> None:
-        super().__init__(parent)
-        self.setWindowTitle("配方")
-        self.setWindowIcon(QIcon(QPixmap(":/images/folder.png")))

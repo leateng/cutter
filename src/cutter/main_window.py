@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
 
         action_open_dxf = QAction(QIcon(QPixmap(":/images/dxf.png")), "打开文件", self)
         action_open_dxf.triggered.connect(self._select_doc)
+        action_open_dxf.setShortcut(QKeySequence("Ctrl+o"))
         toolbar.addAction(action_open_dxf)
 
         action_start_machine = QAction(
@@ -71,34 +72,41 @@ class MainWindow(QMainWindow):
         # action_start_machine.setIconText("start")
         # action_start_machine.setStatusTip("This is your button")
         action_start_machine.triggered.connect(self._start_machine)
+        action_start_machine.setShortcut(QKeySequence("F5"))
         toolbar.addAction(action_start_machine)
 
         action_open_recipe = QAction(
             QIcon(QPixmap(":/images/folder.png")), "配方管理", self
         )
         action_open_recipe.triggered.connect(self._open_recipe_dialog)
+        action_open_recipe.setShortcut(QKeySequence("Ctrl+r"))
         toolbar.addAction(action_open_recipe)
 
         action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
         action_user_manage.triggered.connect(self._open_users_management)
+        action_user_manage.setShortcut(QKeySequence("Ctrl+u"))
         toolbar.addAction(action_user_manage)
 
         action_controller = QAction(
             QIcon(QPixmap(":/images/game-controller.png")), "JOY", self
         )
         action_controller.triggered.connect(self._open_joy)
+        action_controller.setShortcut(QKeySequence("Ctrl+j"))
         toolbar.addAction(action_controller)
 
         generate_gcode = QAction(QIcon(QPixmap(":/images/gcode.png")), "生成GCODE", self)
         generate_gcode.triggered.connect(self._open_gcode_dialog)
+        generate_gcode.setShortcut(QKeySequence("Ctrl+G"))
         toolbar.addAction(generate_gcode)
 
         go_home = QAction(QIcon(QPixmap(":/images/target.png")), "回零", self)
         go_home.triggered.connect(self._go_home)
+        go_home.setShortcut(QKeySequence("Ctrl+h"))
         toolbar.addAction(go_home)
 
         action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
         action_about_us.triggered.connect(self._open_about_us)
+        action_about_us.setShortcut(QKeySequence("Ctrl+i"))
         toolbar.addAction(action_about_us)
 
         # set background image
