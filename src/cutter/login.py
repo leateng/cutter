@@ -1,17 +1,20 @@
+from qtpy.QtCore import Qt, Slot
+from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtWidgets import (
+    QApplication,
+    QDialog,
+    QFormLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QStyle,
+    QVBoxLayout,
+)
+
 import cutter.consts as g
 import cutter.rc_images
 from cutter.database import validate_login
-from qtpy.QtCore import Qt
-from qtpy.QtCore import Slot
-from qtpy.QtGui import QPixmap, QIcon
-from qtpy.QtWidgets import QDialog
-from qtpy.QtWidgets import QFormLayout
-from qtpy.QtWidgets import QHBoxLayout
-from qtpy.QtWidgets import QLabel
-from qtpy.QtWidgets import QLineEdit
-from qtpy.QtWidgets import QPushButton
-from qtpy.QtWidgets import QSpacerItem
-from qtpy.QtWidgets import QVBoxLayout
 
 
 class LoginDialog(QDialog):
@@ -24,7 +27,8 @@ class LoginDialog(QDialog):
 
         self.logo = QLabel()
         self.logo.setPixmap(QPixmap(":/images/hc.png"))
-        self.logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.logo.setAlignment(Qt.AlignCenter)
 
         # 创建用户名标签、文本框
         self.username_label = QLabel("用户:")
@@ -37,7 +41,13 @@ class LoginDialog(QDialog):
 
         # 创建登录按钮
         self.login_button = QPushButton("登录")  # 创建取消按钮和布局
+        self.login_button.setIcon(
+            QApplication.style().standardIcon(QStyle.SP_DialogOkButton)
+        )
         self.cancel_button = QPushButton("取消")
+        self.cancel_button.setIcon(
+            QApplication.style().standardIcon(QStyle.SP_DialogCancelButton)
+        )
         self.button_layout = QHBoxLayout()
         self.button_layout.addStretch(1)
         self.button_layout.addWidget(self.login_button)
@@ -63,7 +73,7 @@ class LoginDialog(QDialog):
 
         self.setFixedSize(self.sizeHint())
 
-    @Slot()
+    # @Slot()
     def validate_login(self):
         username = self.username_edit.text()
         password = self.password_edit.text()
