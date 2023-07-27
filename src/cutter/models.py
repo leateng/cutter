@@ -1,12 +1,16 @@
+from datetime import time
+from typing import Optional
+
+
 class User:
     def __init__(
         self,
-        id=None,
-        name=None,
-        password=None,
-        role=None,
-        department=None,
-        created_at=None,
+        id: Optional[int] = None,
+        name: Optional[str] = None,
+        password: Optional[str] = None,
+        role: Optional[int] = None,
+        department: Optional[str] = None,
+        created_at: Optional[time] = None,
     ) -> None:
         self._id = id
         self._name = name

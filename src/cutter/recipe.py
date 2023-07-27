@@ -2,9 +2,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-import ezdxf
-import qtpy
-from ezdxf.lldxf.const import DXFStructureError
+from ezdxf import recover
+from ezdxf.lldxf.const import DXFError
 from qtpy import QtCore
 from qtpy.QtGui import QIcon, QPixmap
 from qtpy.QtWidgets import (
@@ -145,30 +144,28 @@ class RecipeDialg(QDialog):
         )
         if path:
             try:
-                try:
-                    self.origin_path = path
-                    doc = ezdxf.readfile(path)
-                except ezdxf.DXFError:
-                    doc, auditor = recover.readfile(path)
-                else:
-                    auditor = doc.audit()
-
-                pypath = Path(path)
-                self.set_document(doc, auditor, True)
-                self.recipe_name.setText(pypath.stem)
-                self.origin_filename.setText(pypath.name)
-                self.created_by.setText(g.CURRENT_USER._name)
-                self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            except IOError as e:
-                self.origin_path = None
-                QMessageBox.critical(self, "Loading Error", str(e))
-            except DXFStructureError as e:
-                self.origin_path = None
+                doc, auditor = recover.readfile(path)
+            except IOError:
                 QMessageBox.critical(
-                    self,
-                    "DXF Structure Error",
-                    f'Invalid DXF file "{path}": {str(e)}',
+                    self, "Loading Error", "Not a DXF file or a generic I/O error."
                 )
+                self.origin_path = None
+                return
+            except DXFError:
+                QMessageBox.critical(
+                    self, "Loading Error", "Invalid or corrupted DXF file."
+                )
+                self.origin_path = None
+                return
+
+            pypath = Path(path)
+            self.origin_path = path
+            self.set_document(doc, auditor, True)
+            self.recipe_name.setText(pypath.stem)
+            self.origin_filename.setText(pypath.name)
+            self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            if g.CURRENT_USER is not None and g.CURRENT_USER._name is not None:
+                self.created_by.setText(g.CURRENT_USER._name)
 
     def set_document(self, doc, auditor, is_new):
         # is new recipe
