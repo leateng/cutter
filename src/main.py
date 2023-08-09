@@ -51,7 +51,8 @@ if __name__ == "__main__":
         # 验证成功，启动程序
         print("Successful login")
         win = MainWindow()
-        win.setWindowTitle(f"Cutter-{g.CURRENT_USER._name}")
+        if g.CURRENT_USER is not None:
+            win.setWindowTitle(f"Cutter-{g.CURRENT_USER._name}")
         win.showMaximized()
         app.exec_()
     else:
