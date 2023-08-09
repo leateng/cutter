@@ -9,12 +9,13 @@ import math
 
 class GCode:
     def __init__(
-        self, dxf_entities, tool_radius, cutter_offset, rotation_speed
+        self, dxf_entities, tool_radius, cutter_offset, rotation_speed, cutter_deepth
     ) -> None:
         self.dxf_entities = dxf_entities
         self.tool_radius = tool_radius
         self.cutter_offset = cutter_offset
         self.rotation_speed = rotation_speed
+        self.cutter_deepth = cutter_deepth
         self.instructions = []
         self.bbox = bbox.extents(self.dxf_entities)
 
@@ -139,7 +140,9 @@ class GCode:
         self.fast_move_xy(start_point.x, start_point.y - 10)
 
     def move_to_cut_deepth(self):
-        self.instructions.append("G00 Z{:.3f} (cut deepth)".format(ALIGNMENT["z"]))
+        self.instructions.append(
+            "G00 Z{:.3f} (cut deepth)".format(ALIGNMENT["z"] - self.cutter_deepth)
+        )
 
     def set_move_speed(self, speed):
         self.instructions.append(f"F{speed}")
@@ -171,6 +174,9 @@ class GCode:
 
         if (self.tool_radius - self.cutter_offset) == 0:
             raise Exception("刀具半径配置错误!")
+
+        if self.cutter_deepth == 0:
+            raise Exception("切割深度未配置!")
 
     def get_entity_bbox(self, e):
         if e.dxf.dxftype == "CIRCLE":

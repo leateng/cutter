@@ -136,11 +136,13 @@ class MainWindow(QMainWindow):
         self.tool_radius = QDoubleSpinBox()
         self.cutter_offset = QDoubleSpinBox()
         self.rotation_speed = QSpinBox()
+        self.cutter_deepth = QDoubleSpinBox()
         self.rotation_speed.setRange(0, 6000)
 
         machine_param_layout = QFormLayout()
         machine_param_layout.addRow(QLabel("刀具半径(mm)"), self.tool_radius)
         machine_param_layout.addRow(QLabel("偏移量(mm)"), self.cutter_offset)
+        machine_param_layout.addRow(QLabel("切割深度(mm)"), self.cutter_deepth)
         machine_param_layout.addRow(QLabel("转速(rpm)"), self.rotation_speed)
         machine_param_group = QGroupBox("参数")
         machine_param_group.setLayout(machine_param_layout)
@@ -253,9 +255,14 @@ class MainWindow(QMainWindow):
         try:
             tool_radius = self.tool_radius.value()
             cutter_offset = self.cutter_offset.value()
+            cutter_deepth = self.cutter_deepth.value()
             rotation_speed = self.rotation_speed.value()
             generator = GCode(
-                self.dxf_entities, tool_radius, cutter_offset, rotation_speed
+                self.dxf_entities,
+                tool_radius,
+                cutter_offset,
+                rotation_speed,
+                cutter_deepth,
             )
             gcode = generator.generate()
         except Exception as e:
@@ -294,9 +301,14 @@ class MainWindow(QMainWindow):
         try:
             tool_radius = self.tool_radius.value()
             cutter_offset = self.cutter_offset.value()
+            cutter_deepth = self.cutter_deepth.value()
             rotation_speed = self.rotation_speed.value()
             generator = GCode(
-                self.dxf_entities, tool_radius, cutter_offset, rotation_speed
+                self.dxf_entities,
+                tool_radius,
+                cutter_offset,
+                rotation_speed,
+                cutter_deepth,
             )
             gcode = generator.generate()
         except Exception as e:
