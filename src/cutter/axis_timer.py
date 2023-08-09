@@ -2,7 +2,7 @@ from qtpy.QtCore import QTimer
 from cutter.plc import PLC_CONN, read_axis
 
 
-class AxisTimer():
+class AxisTimer:
     def __init__(self):
         self.observers = []
         self.timer = QTimer()
@@ -16,16 +16,11 @@ class AxisTimer():
         self.observers.append(obj)
 
     def notify(self):
-        print("updateAxis")
+        # print("updateAxis")
 
         if PLC_CONN.is_open:
             x, y, z = read_axis()
-            state = {
-                "x": x,
-                "y": y,
-                "z": z,
-                "is_open": True
-            }
+            state = {"x": x, "y": y, "z": z, "is_open": True}
 
             for o in self.observers:
                 o.update(state)

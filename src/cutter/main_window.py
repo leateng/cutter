@@ -28,6 +28,8 @@ from qtpy.QtWidgets import (
 
 from cutter.about_dialog import AboutUsDialog
 from cutter.axis_timer import axis_timer
+from cutter.error_info_widget import ErrorInfo
+from cutter.error_report_timer import error_report_timer
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
 from cutter.entity_tree import EntityTree
@@ -46,13 +48,15 @@ class MainWindow(QMainWindow):
 
         self.dxf_entities = []
         self.machine_info = MachineInfo(self)
+        self.error_info = ErrorInfo()
         axis_timer.addObserver(self.machine_info)
+        error_report_timer.addObserver(self.error_info)
         self._init_toolbar()
         self._init_layout()
         self.setWindowIcon(QIcon(QPixmap(":/images/cutter.png")))
         self._regist_fullscreen()
 
-        # self._init_statusbar()
+        self._init_statusbar()
 
     def _init_toolbar(self):
         toolbar = QToolBar("My main toolbar")
@@ -234,9 +238,11 @@ class MainWindow(QMainWindow):
 
     def _init_statusbar(self):
         self.statusBar = QStatusBar()
-        self.b = QPushButton("click here")
-        self.statusBar.addWidget(QLabel("x: 1, y:2 z: 3"))
+        self.statusBar.setStyleSheet("QStatusBar::item { border: none; }")
+        self.statusBar.addWidget(self.error_info)
         self.setStatusBar(self.statusBar)
+        self.error_info.update_error_info(False, None)
+        error_report_timer.start()
 
     def _start_machine(self):
         if len(self.dxf_entities) == 0:

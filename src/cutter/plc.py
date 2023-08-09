@@ -24,3 +24,14 @@ def read_axis():
         position_z = PLC_CONN.read_by_name("GVL_HMI.lrCrtPosZ", pyads.PLCTYPE_LREAL)
 
     return (position_x, position_y, position_z)
+
+
+def read_machine_erorr():
+    has_error = False
+    error_code = None
+
+    if PLC_CONN.is_open:
+        has_error = PLC_CONN.read_by_name("GVL_HMI.bError", pyads.PLCTYPE_BOOL)
+        error_code = PLC_CONN.read_by_name("GVL_HMI.udiErrorCode", pyads.PLCTYPE_UDINT)
+
+    return (has_error, error_code)

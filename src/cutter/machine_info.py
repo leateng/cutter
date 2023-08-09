@@ -2,7 +2,7 @@ from qtpy.QtWidgets import QWidget, QLabel, QFormLayout
 
 
 class MachineInfo(QWidget):
-    def __init__(self, parent = None) -> None:
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.state_label = QLabel("断开")
         self.axis_label = QLabel("X: 0.00, Y: 0.00, Z: 0.00")
@@ -17,9 +17,9 @@ class MachineInfo(QWidget):
 
     def update(self, state):
         print(f"update MachineInfo: {state}")
-        x = state['x']
-        y = state['y']
-        z = state['z']
+        x = state["x"]
+        y = state["y"]
+        z = state["z"]
         is_open = state["is_open"]
 
         if is_open is True:
