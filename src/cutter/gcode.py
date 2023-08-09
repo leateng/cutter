@@ -47,6 +47,7 @@ class GCode:
             )
         )
         self.instructions.append("D1")
+        self.instructions.append("M08")  # start dust catcher
         self.instructions.append(f"S{self.rotation_speed} M03")
         self.set_right_compensation()
 
@@ -55,6 +56,7 @@ class GCode:
             "G01 Z{:.3f} (z safe margin)".format(self.safe_height())
         )
         self.instructions.append("S0 M05")
+        self.instructions.append("M09")  # stop dust catcher
         self.stop_compensation()
         self.fast_move_xy(0, 0)
         self.instructions.append("M2 (Program end)")
