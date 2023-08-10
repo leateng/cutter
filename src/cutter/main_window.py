@@ -37,7 +37,7 @@ from cutter.gcode import GCode
 from cutter.gcode_dialog import GCodeDialog
 from cutter.joy import JoyDialog
 from cutter.machine_info import MachineInfo
-from cutter.plc import PLC_CONN
+from cutter.plc import PLC_CONN, reset_machine
 from cutter.recipe import RecipeCombo, RecipeDialg
 from cutter.users import UsersDialog
 
@@ -48,70 +48,20 @@ class MainWindow(QMainWindow):
 
         self.dxf_entities = []
         self.machine_info = MachineInfo(self)
-        self.error_info = ErrorInfo()
         axis_timer.addObserver(self.machine_info)
-        error_report_timer.addObserver(self.error_info)
         self._init_toolbar()
         self._init_layout()
         self.setWindowIcon(QIcon(QPixmap(":/images/cutter.png")))
+        # self._init_statusbar()
         self._regist_fullscreen()
 
-        self._init_statusbar()
-
     def _init_toolbar(self):
-        toolbar = QToolBar("My main toolbar")
-        toolbar.setIconSize(QSize(48, 48))
-        toolbar.setMovable(False)
-        toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
-        self.addToolBar(toolbar)
-
-        action_open_dxf = QAction(QIcon(QPixmap(":/images/dxf.png")), "打开文件", self)
-        action_open_dxf.triggered.connect(self._select_doc)
-        action_open_dxf.setShortcut(QKeySequence("Ctrl+o"))
-        toolbar.addAction(action_open_dxf)
-
-        action_start_machine = QAction(
-            QIcon(QPixmap(":/images/start.png")), "启动机器", self
-        )
-        # action_start_machine.setIconText("start")
-        # action_start_machine.setStatusTip("This is your button")
-        action_start_machine.triggered.connect(self._start_machine)
-        action_start_machine.setShortcut(QKeySequence("F5"))
-        toolbar.addAction(action_start_machine)
-
-        action_open_recipe = QAction(
-            QIcon(QPixmap(":/images/folder.png")), "配方管理", self
-        )
-        action_open_recipe.triggered.connect(self._open_recipe_dialog)
-        action_open_recipe.setShortcut(QKeySequence("Ctrl+r"))
-        toolbar.addAction(action_open_recipe)
-
-        action_user_manage = QAction(QIcon(QPixmap(":/images/user1.png")), "用户管理", self)
-        action_user_manage.triggered.connect(self._open_users_management)
-        action_user_manage.setShortcut(QKeySequence("Ctrl+u"))
-        toolbar.addAction(action_user_manage)
-
-        action_controller = QAction(
-            QIcon(QPixmap(":/images/game-controller.png")), "JOY", self
-        )
-        action_controller.triggered.connect(self._open_joy)
-        action_controller.setShortcut(QKeySequence("Ctrl+j"))
-        toolbar.addAction(action_controller)
-
-        generate_gcode = QAction(QIcon(QPixmap(":/images/gcode.png")), "生成GCODE", self)
-        generate_gcode.triggered.connect(self._open_gcode_dialog)
-        generate_gcode.setShortcut(QKeySequence("Ctrl+G"))
-        toolbar.addAction(generate_gcode)
-
-        go_home = QAction(QIcon(QPixmap(":/images/target.png")), "回零", self)
-        go_home.triggered.connect(self._go_home)
-        go_home.setShortcut(QKeySequence("Ctrl+h"))
-        toolbar.addAction(go_home)
-
-        action_about_us = QAction(QIcon(QPixmap(":/images/info.png")), "关于我们", self)
-        action_about_us.triggered.connect(self._open_about_us)
-        action_about_us.setShortcut(QKeySequence("Ctrl+i"))
-        toolbar.addAction(action_about_us)
+        self.toolbar = QToolBar("My main toolbar")
+        self.toolbar.setIconSize(QSize(48, 48))
+        self.toolbar.setMovable(False)
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextUnderIcon)
+        self.addToolBar(self.toolbar)
+        self._init_toolbar_actions()
 
         # set background image
         banner_image = QLabel()
@@ -122,8 +72,27 @@ class MainWindow(QMainWindow):
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored)
 
         # 添加标签和占位符到工具栏中
-        toolbar.addWidget(spacer)
-        toolbar.addWidget(banner_image)
+        self.toolbar.addWidget(spacer)
+        self.toolbar.addWidget(banner_image)
+
+    def _init_toolbar_actions(self):
+        actions_config = [
+            ["dxf.png", "打开文件", self._select_doc, "Ctrl+o"],
+            ["start.png", "启动机器", self._start_machine, "F5"],
+            ["folder.png", "配方管理", self._open_recipe_dialog, "Ctrl+m"],
+            ["user1.png", "用户管理", self._open_users_management, "Ctrl+u"],
+            ["game-controller.png", "JOG", self._open_joy, "Ctrl+j"],
+            ["gcode.png", "生成GCODE", self._open_gcode_dialog, "Ctrl+g"],
+            ["target.png", "回零", self._go_home, "ctrl+h"],
+            ["reset.png", "复位", self._reset_machine, "ctrl+r"],
+            ["info.png", "关于我们", self._open_about_us, "Ctrl+i"],
+        ]
+
+        for e in actions_config:
+            action = QAction(QIcon(QPixmap(f":/images/{e[0]}")), e[1], self)
+            action.triggered.connect(e[2])
+            action.setShortcut(QKeySequence(e[3]))
+            self.toolbar.addAction(action)
 
     def _init_layout(self):
         self.main_splitter = QSplitter()
@@ -238,13 +207,15 @@ class MainWindow(QMainWindow):
         dlg = JoyDialog()
         dlg.exec()
 
-    def _init_statusbar(self):
-        self.statusBar = QStatusBar()
-        self.statusBar.setStyleSheet("QStatusBar::item { border: none; }")
-        self.statusBar.addWidget(self.error_info)
-        self.setStatusBar(self.statusBar)
-        self.error_info.update_error_info(False, None)
-        error_report_timer.start()
+    # def _init_statusbar(self):
+    #     self.error_info = ErrorInfo()
+    #     self.statusBar = QStatusBar()
+    #     self.statusBar.setStyleSheet("QStatusBar::item { border: none; }")
+    #     self.statusBar.addWidget(self.error_info)
+    #     self.setStatusBar(self.statusBar)
+    #     self.error_info.update_error_info(False, None)
+    #     error_report_timer.addObserver(self.error_info)
+    #     error_report_timer.start()
 
     def _start_machine(self):
         if len(self.dxf_entities) == 0:
@@ -325,6 +296,12 @@ class MainWindow(QMainWindow):
         if PLC_CONN.is_open:
             print("GVL_HMI.bHome=True")
             PLC_CONN.write_by_name("GVL_HMI.bHome", True, pyads.PLCTYPE_BOOL)
+        else:
+            QMessageBox.warning(self, "Warning", "PLC 未连接")
+
+    def _reset_machine(self):
+        if PLC_CONN.is_open:
+            reset_machine()
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 

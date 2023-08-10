@@ -4,6 +4,7 @@
     <file>images/hc.png</file>
     <file>images/hc2.png</file>
     <file>images/start.png</file>
+    <file>images/start2.png</file>
     <file>images/add-user.png</file>
     <file>images/user1.png</file>
     <file>images/game-controller.png</file>
@@ -20,5 +21,6 @@
     <file>images/button-bg.png</file>
     <file>images/button-bg2.png</file>
     <file>images/add.png</file>  
+    <file>images/reset.png</file>  
 </qresource>
 </RCC>

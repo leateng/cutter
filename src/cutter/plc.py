@@ -35,3 +35,8 @@ def read_machine_erorr():
         error_code = PLC_CONN.read_by_name("GVL_HMI.udiErrorCode", pyads.PLCTYPE_UDINT)
 
     return (has_error, error_code)
+
+
+def reset_machine():
+    if PLC_CONN.is_open:
+        PLC_CONN.read_by_name("GVL_HMI.bReset", pyads.PLCTYPE_BOOL)
