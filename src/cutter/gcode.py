@@ -215,22 +215,6 @@ class GCode:
         pass
 
     def bbox_min_point(self):
-        # bboxs = []
-        # for e in self.dxf_entities:
-        #     bboxs.append(self.get_entity_bbox(e))
-
-        # min_point = min(bboxs[0])
-        # x = min_point.x
-        # y = min_point.y
-        # # embed()
-        # for b in bboxs:
-        #     min_point = min(b)
-        #     if x > min_point.x:
-        #         x = min_point.x
-
-        #     if y > min_point.y:
-        #         y = min_point.y
-
         return min(self.bbox)
 
     def calc_offset(self):
