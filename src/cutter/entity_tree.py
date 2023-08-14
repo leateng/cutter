@@ -60,7 +60,7 @@ class EntityTree(QTreeWidget):
             # layer_node.setText(0, layer.dxf.name)
             layer_node.setText(0, layer_name)
             layer_node.setText(1, "")
-            layer_node.setCheckState(0, Qt.CheckState.Checked)
+            # layer_node.setCheckState(0, Qt.CheckState.Checked)
 
             # 遍历图层中的实体
             for entity in ents:
