@@ -1,6 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import shutil
 
 from ezdxf import recover
 from ezdxf.lldxf.const import DXFError
@@ -28,6 +29,8 @@ from qtpy.QtWidgets import (
 import cutter.consts as g
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
+from cutter.database import create_recipe, DXF_PATH, get_recipes
+from cutter.models import Recipe
 
 
 class RecipeCombo(QComboBox):
@@ -37,9 +40,15 @@ class RecipeCombo(QComboBox):
         self.setCurrentIndex(0)
 
 
+class RecipeListView(QListView):
+    def __init__(self, parent: Optional[QWidget]) -> None:
+        super().__init__(parent)
+
+
 class RecipeDialg(QDialog):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.recipes_data = get_recipes()
         self.setWindowTitle("配方管理")
         self.setWindowIcon(QIcon(QPixmap(":/images/folder.png")))
 
@@ -54,6 +63,7 @@ class RecipeDialg(QDialog):
         self.recipe_list = QListView()
         self.tool_radius = QSpinBox()
         self.cutter_offset = QSpinBox()
+        self.cutter_deepth = QSpinBox()
         self.rotation_speed = QSpinBox()
         self.load_dxf_button = QPushButton(QIcon(":/images/add.png"), "")
         self.load_dxf_button.clicked.connect(self._select_doc)
@@ -72,9 +82,10 @@ class RecipeDialg(QDialog):
 
         # machine info
         machine_param_layout = QFormLayout()
-        machine_param_layout.addRow(QLabel("刀具半径"), self.tool_radius)
-        machine_param_layout.addRow(QLabel("偏移量"), self.cutter_offset)
-        machine_param_layout.addRow(QLabel("转速"), self.rotation_speed)
+        machine_param_layout.addRow(QLabel("刀具半径(mm)"), self.tool_radius)
+        machine_param_layout.addRow(QLabel("偏移量(mm)"), self.cutter_offset)
+        machine_param_layout.addRow(QLabel("切割深度(mm)"), self.cutter_deepth)
+        machine_param_layout.addRow(QLabel("转速(rpm)"), self.rotation_speed)
         machine_param_group = QGroupBox("参数")
         machine_param_group.setLayout(machine_param_layout)
 
@@ -122,13 +133,23 @@ class RecipeDialg(QDialog):
         self._layout.setStretch(1, 2)
 
     def saveRecipe(self):
-        recipe_name = self.recipe_name.text()
-        origin_filename = self.origin_filename.text()
-        created_by = g.CURRENT_USER._id if g.CURRENT_USER is not None else None
-        created_at = datetime.now()
-        tool_radius = self.tool_radius.value()
-        cutter_offset = self.cutter_offset.value()
-        rotation_speed = self.rotation_speed.value()
+        recipe = Recipe()
+        recipe._name = self.recipe_name.text()
+        recipe._file_name = self.origin_filename.text()
+        recipe._tool_radius = self.tool_radius.value()
+        recipe._cutter_offset = self.cutter_offset.value()
+        recipe._rotation_speed = self.rotation_speed.value()
+        recipe._created_by = g.CURRENT_USER._id if g.CURRENT_USER is not None else None
+        recipe._created_at = datetime.now()
+        recipe._updated_by = recipe._created_by
+        recipe._updated_at = recipe._created_at
+
+        status, recipe_id = create_recipe(recipe)
+        if status == False:
+            QMessageBox.critical(self, "Error", "添加Recipe失败！")
+            return
+
+        self._save_recipe_dxf(recipe_id)
 
     def _delete_recipe(self):
         pass
@@ -183,3 +204,8 @@ class RecipeDialg(QDialog):
         # # draw entity tree
         # # self.entity_tree = EntityTree(self.dxf_entities)
         # self.entity_tree.set_entities(self.dxf_entities)
+
+    def _save_recipe_dxf(self, recipe_id: int):
+        dst = DXF_PATH / f"{recipe_id}.dxf"
+        if self.origin_path is not None:
+            shutil.copy(self.origin_path, str(dst))

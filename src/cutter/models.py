@@ -29,7 +29,8 @@ class Recipe:
         file_content=None,
         thumbnail=None,
         tool_radius=None,
-        offset=None,
+        cutter_offset=None,
+        cutter_deepth=None,
         rotation_speed=None,
         created_by=None,
         created_at=None,
@@ -42,7 +43,8 @@ class Recipe:
         self._file_content = file_content
         self._thumbnail = thumbnail
         self._tool_radius = tool_radius
-        self._offset = offset
+        self._cutter_offset = cutter_offset
+        self._cutter_deepth = cutter_deepth
         self._rotation_speed = rotation_speed
         self._created_by = created_by
         self._created_at = created_at
