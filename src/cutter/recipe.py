@@ -2,11 +2,13 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 import shutil
+from IPython import embed
+from PySide2.QtCore import QItemSelectionModel
 
 from ezdxf import recover
 from ezdxf.lldxf.const import DXFError
 from qtpy import QtCore
-from qtpy.QtGui import QIcon, QPixmap
+from qtpy.QtGui import QIcon, QImage, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
     QComboBox,
@@ -29,7 +31,14 @@ from qtpy.QtWidgets import (
 import cutter.consts as g
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
 from cutter.consts import SUPPORTED_ENTITY_TYPES
-from cutter.database import create_recipe, DXF_PATH, get_recipes
+from cutter.database import (
+    create_recipe,
+    DXF_PATH,
+    create_user,
+    delete_recipe,
+    get_recipes,
+    update_recipe,
+)
 from cutter.models import Recipe
 
 
@@ -40,15 +49,41 @@ class RecipeCombo(QComboBox):
         self.setCurrentIndex(0)
 
 
+class RecipeListModel(QtCore.QAbstractListModel):
+    def __init__(self, recipes=None):
+        super().__init__()
+        self.recipes = recipes or []
+        self.icon = QImage(":/images/dxf.png").scaledToHeight(18)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            recipe = self.recipes[index.row()]
+            return recipe._name
+
+        if role == QtCore.Qt.DecorationRole:
+            return self.icon
+
+    def rowCount(self, index) -> int:
+        return len(self.recipes)
+
+
 class RecipeListView(QListView):
-    def __init__(self, parent: Optional[QWidget]) -> None:
-        super().__init__(parent)
+    def __init__(self) -> None:
+        super().__init__()
 
 
 class RecipeDialg(QDialog):
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
+        self.current_recipe: Optional[Recipe] = None
+        self.recipe_view = RecipeListView()
         self.recipes_data = get_recipes()
+        self.recipes_model = RecipeListModel(self.recipes_data)
+        self.recipe_view.setModel(self.recipes_model)
+        self.recipe_view.selectionModel().selectionChanged.connect(
+            self.recipe_selection_changed
+        )
+
         self.setWindowTitle("配方管理")
         self.setWindowIcon(QIcon(QPixmap(":/images/folder.png")))
 
@@ -60,7 +95,6 @@ class RecipeDialg(QDialog):
 
         self._layout = QHBoxLayout(self)
         self.search_edit = QLineEdit()
-        self.recipe_list = QListView()
         self.tool_radius = QSpinBox()
         self.cutter_offset = QSpinBox()
         self.cutter_deepth = QSpinBox()
@@ -78,7 +112,7 @@ class RecipeDialg(QDialog):
         search_layout.addWidget(self.load_dxf_button)
         search_layout.addWidget(self.search_edit)
         left_layout.addLayout(search_layout)
-        left_layout.addWidget(self.recipe_list)
+        left_layout.addWidget(self.recipe_view)
 
         # machine info
         machine_param_layout = QFormLayout()
@@ -107,11 +141,14 @@ class RecipeDialg(QDialog):
 
         # button
         self.add_button = QPushButton("保存")
+        self.add_button.setEnabled(False)
         self.add_button.setIcon(
             QApplication.style().standardIcon(QStyle.SP_DialogOkButton)
         )
         self.add_button.clicked.connect(self.saveRecipe)
+
         self.del_button = QPushButton("删除")
+        self.del_button.setEnabled(False)
         self.del_button.setIcon(
             QApplication.style().standardIcon(QStyle.SP_DialogCancelButton)
         )
@@ -133,29 +170,60 @@ class RecipeDialg(QDialog):
         self._layout.setStretch(1, 2)
 
     def saveRecipe(self):
-        recipe = Recipe()
+        if self.current_recipe is None:
+            return
+
+        recipe = self.current_recipe
         recipe._name = self.recipe_name.text()
         recipe._file_name = self.origin_filename.text()
         recipe._tool_radius = self.tool_radius.value()
         recipe._cutter_offset = self.cutter_offset.value()
+        recipe._cutter_deepth = self.cutter_deepth.value()
         recipe._rotation_speed = self.rotation_speed.value()
-        recipe._created_by = g.CURRENT_USER._id if g.CURRENT_USER is not None else None
-        recipe._created_at = datetime.now()
-        recipe._updated_by = recipe._created_by
-        recipe._updated_at = recipe._created_at
+        recipe._updated_by = g.CURRENT_USER._id if g.CURRENT_USER is not None else None
+        recipe._updated_at = datetime.now()
 
-        status, recipe_id = create_recipe(recipe)
+        if recipe._id is not None:
+            status, recipe_id = update_recipe(recipe)
+        else:
+            recipe._created_by = (
+                g.CURRENT_USER._id if g.CURRENT_USER is not None else None
+            )
+            recipe._created_at = datetime.now()
+            status, recipe_id = create_recipe(recipe)
+            if status is True and recipe_id is not None:
+                self._save_recipe_dxf(recipe_id)
+
         if status == False:
             QMessageBox.critical(self, "Error", "添加Recipe失败！")
             return
 
-        self._save_recipe_dxf(recipe_id)
-
     def _delete_recipe(self):
-        pass
+        indexes = self.recipe_view.selectedIndexes()
+        if indexes:
+            index = indexes[0]
+            recipe = self.recipes_model.recipes[index.row()]
+            del self.recipes_model.recipes[index.row()]
+            self.recipes_model.layoutChanged.emit()
+            self.recipe_view.clearSelection()
+            delete_recipe(recipe._id)
+            self.del_button.setEnabled(False)
+            self.add_button.setEnabled(False)
 
     def _edit_recipe(self):
         pass
+
+    def refresh_recipe_list(self, recipe_id=None):
+        self.recipes_model.recipes = get_recipes()
+        self.recipes_model.layoutChanged.emit()
+
+        if recipe_id is None:
+            self.recipe_view.clearSelection()
+        else:
+            index = self.recipes_model.index(1, 0)  # 选择第3行
+            self.recipes_model.selectionModel().select(
+                index, QItemSelectionModel.Select
+            )
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -187,6 +255,7 @@ class RecipeDialg(QDialog):
             self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             if g.CURRENT_USER is not None and g.CURRENT_USER._name is not None:
                 self.created_by.setText(g.CURRENT_USER._name)
+            self.add_button.setEnabled(True)
 
     def set_document(self, doc, auditor, is_new):
         # is new recipe
@@ -209,3 +278,25 @@ class RecipeDialg(QDialog):
         dst = DXF_PATH / f"{recipe_id}.dxf"
         if self.origin_path is not None:
             shutil.copy(self.origin_path, str(dst))
+
+    def recipe_selection_changed(self, selected, deselected):
+        print("select changed")
+        indexes = selected.indexes()
+        if indexes:
+            index = indexes[0]
+            recipe = self.recipes_model.recipes[index.row()]
+            self.current_recipe = recipe
+            self.load_recipe()
+
+    def load_recipe(self):
+        recipe = self.current_recipe
+        self.del_button.setEnabled(True)
+        self.add_button.setEnabled(True)
+        self.tool_radius.setValue(recipe._tool_radius)
+        self.cutter_offset.setValue(recipe._cutter_offset)
+        self.cutter_deepth.setValue(recipe._cutter_deepth)
+        self.rotation_speed.setValue(recipe._rotation_speed)
+        self.recipe_name.setText(recipe._name)
+        self.origin_filename.setText(recipe._file_name)
+        self.created_by
+        self.created_at.setText(recipe._created_at)

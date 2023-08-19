@@ -212,7 +212,7 @@ def create_recipe(recipe: Recipe) -> Tuple[bool, Optional[int]]:
         return (ret, None)
 
 
-def update_recipe(recipe: Recipe) -> bool:
+def update_recipe(recipe: Recipe) -> Tuple[bool, Optional[int]]:
     query = QSqlQuery(DB_CONN)
     query.prepare(
         """
@@ -224,7 +224,7 @@ def update_recipe(recipe: Recipe) -> bool:
           cutter_deepth=?,
           rotation_speed=?,
           updated_by=?,
-          updated_at=?,
+          updated_at=?
           where id=?
     """
     )
@@ -240,7 +240,13 @@ def update_recipe(recipe: Recipe) -> bool:
     query.addBindValue(str(datetime.now()))
     query.addBindValue(recipe._id)
 
-    return query.exec_()
+    ret = query.exec_()
+
+    if ret == True:
+        return (ret, query.lastInsertId())
+    else:
+        print(f"update recipe error: {query.lastError().text()}")
+        return (ret, None)
 
 
 def get_recipes():
@@ -275,6 +281,11 @@ def delete_recipe(id: int) -> bool:
         query.prepare("delete from recipes where id=?")
         query.addBindValue(id)
         ret = query.exec_()
+
+        dxf_file = DXF_PATH / f"{id}.dxf"
+        if ret == True and os.path.exists(dxf_file):
+            os.remove(dxf_file)
+
         print(f"delete recipe: {ret}")
 
     return ret
