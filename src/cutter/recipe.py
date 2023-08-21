@@ -66,6 +66,11 @@ class RecipeListModel(QtCore.QAbstractListModel):
     def rowCount(self, index) -> int:
         return len(self.recipes)
 
+    def getIndexById(self, recipe_id: int) -> Optional[QtCore.QModelIndex]:
+        for idx, e in enumerate(self.recipes):
+            if e._id == recipe_id:
+                return self.index(idx, 0)
+
 
 class RecipeListView(QListView):
     def __init__(self) -> None:
@@ -193,37 +198,33 @@ class RecipeDialg(QDialog):
             status, recipe_id = create_recipe(recipe)
             if status is True and recipe_id is not None:
                 self._save_recipe_dxf(recipe_id)
+                self.refresh_recipe_list()
 
         if status == False:
             QMessageBox.critical(self, "Error", "添加Recipe失败！")
             return
 
     def _delete_recipe(self):
-        indexes = self.recipe_view.selectedIndexes()
-        if indexes:
-            index = indexes[0]
-            recipe = self.recipes_model.recipes[index.row()]
-            del self.recipes_model.recipes[index.row()]
-            self.recipes_model.layoutChanged.emit()
-            self.recipe_view.clearSelection()
-            delete_recipe(recipe._id)
-            self.del_button.setEnabled(False)
-            self.add_button.setEnabled(False)
+        if self.current_recipe is not None:
+            if self.current_recipe._id is not None:
+                delete_recipe(self.current_recipe._id)
+                self.current_recipe = None
+                self.refresh_recipe_list()
+                self.sync_recipe_ui()
 
-    def _edit_recipe(self):
-        pass
-
-    def refresh_recipe_list(self, recipe_id=None):
+    def refresh_recipe_list(self):
         self.recipes_model.recipes = get_recipes()
         self.recipes_model.layoutChanged.emit()
 
-        if recipe_id is None:
+        if self.current_recipe is None:
             self.recipe_view.clearSelection()
+            self.del_button.setEnabled(False)
+            self.add_button.setEnabled(False)
         else:
-            index = self.recipes_model.index(1, 0)  # 选择第3行
-            self.recipes_model.selectionModel().select(
-                index, QItemSelectionModel.Select
-            )
+            if self.current_recipe._id is not None:
+                index = self.recipes_model.getIndexById(self.current_recipe._id)
+                if index is not None:
+                    self.recipe_view.setCurrentIndex(index)
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -231,6 +232,18 @@ class RecipeDialg(QDialog):
             caption="Select CAD Document",
             filter="CAD Documents (*.dxf *.DXF)",
         )
+        self.load_dxf_view(path)
+        self.origin_path = path
+        self.current_recipe = Recipe()
+        pypath = Path(path)
+        self.recipe_name.setText(pypath.stem)
+        self.origin_filename.setText(pypath.name)
+        self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        if g.CURRENT_USER is not None and g.CURRENT_USER._name is not None:
+            self.created_by.setText(g.CURRENT_USER._name)
+        self.add_button.setEnabled(True)
+
+    def load_dxf_view(self, path):
         if path:
             try:
                 doc, auditor = recover.readfile(path)
@@ -246,16 +259,7 @@ class RecipeDialg(QDialog):
                 )
                 self.origin_path = None
                 return
-
-            pypath = Path(path)
-            self.origin_path = path
             self.set_document(doc, auditor, True)
-            self.recipe_name.setText(pypath.stem)
-            self.origin_filename.setText(pypath.name)
-            self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            if g.CURRENT_USER is not None and g.CURRENT_USER._name is not None:
-                self.created_by.setText(g.CURRENT_USER._name)
-            self.add_button.setEnabled(True)
 
     def set_document(self, doc, auditor, is_new):
         # is new recipe
@@ -288,15 +292,41 @@ class RecipeDialg(QDialog):
             self.current_recipe = recipe
             self.load_recipe()
 
+    def sync_recipe_ui(self):
+        recipe = self.current_recipe
+        if recipe is None:
+            self.tool_radius.setValue(0)
+            self.cutter_offset.setValue(0)
+            self.cutter_deepth.setValue(0)
+            self.rotation_speed.setValue(0)
+            self.recipe_name.setText("")
+            self.origin_filename.setText("")
+            self.created_by.setText("")
+            self.created_at.setText("")
+            self.scene = DxfEntityScence([])
+            self.view.setScene(self.scene)
+        else:
+            self.tool_radius.setValue(recipe._tool_radius)
+            self.cutter_offset.setValue(recipe._cutter_offset)
+            self.cutter_deepth.setValue(recipe._cutter_deepth)
+            self.rotation_speed.setValue(recipe._rotation_speed)
+            self.recipe_name.setText(recipe._name)
+            self.origin_filename.setText(recipe._file_name)
+            self.created_by
+            self.created_at.setText(recipe._created_at)
+            dxf_path = DXF_PATH / f"{recipe_id}.dxf"
+            self.load_dxf_view(dxf_path)
+
     def load_recipe(self):
         recipe = self.current_recipe
-        self.del_button.setEnabled(True)
-        self.add_button.setEnabled(True)
-        self.tool_radius.setValue(recipe._tool_radius)
-        self.cutter_offset.setValue(recipe._cutter_offset)
-        self.cutter_deepth.setValue(recipe._cutter_deepth)
-        self.rotation_speed.setValue(recipe._rotation_speed)
-        self.recipe_name.setText(recipe._name)
-        self.origin_filename.setText(recipe._file_name)
-        self.created_by
-        self.created_at.setText(recipe._created_at)
+        if recipe:
+            self.del_button.setEnabled(True)
+            self.add_button.setEnabled(True)
+            self.tool_radius.setValue(recipe._tool_radius)
+            self.cutter_offset.setValue(recipe._cutter_offset)
+            self.cutter_deepth.setValue(recipe._cutter_deepth)
+            self.rotation_speed.setValue(recipe._rotation_speed)
+            self.recipe_name.setText(recipe._name)
+            self.origin_filename.setText(recipe._file_name)
+            self.created_by
+            self.created_at.setText(recipe._created_at)
