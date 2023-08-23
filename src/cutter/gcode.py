@@ -63,7 +63,13 @@ class GCode:
         if len(self.dxf_entities) == 1 and self.dxf_entities[0].dxftype() == "CIRCLE":
             self.draw_circle(self.dxf_entities[0])
         else:
-            self.draw_line_and_arc()
+            (start_entity, start_point, end_point) = self.get_start_entity()
+            self.move_to_prepare_point(start_point)
+            self.set_move_speed(400)
+            self.move_to_cut_deepth()
+            self.move_xy(start_point.x, start_point.y)
+            self.draw_line_and_arc(start_entity, start_point, end_point)
+            self.draw_line_and_arc(start_entity, start_point, end_point)
 
     def draw_circle(self, circle):
         center = circle.dxf.center
@@ -82,15 +88,15 @@ class GCode:
         self.instructions.append(
             "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(start.x, start.y, 0, -radius)
         )
+        # repeat
+        self.instructions.append(
+            "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(end.x, end.y, 0, radius)
+        )
+        self.instructions.append(
+            "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(start.x, start.y, 0, -radius)
+        )
 
-    def draw_line_and_arc(self):
-        (start_entity, start_point, end_point) = self.get_start_entity()
-
-        self.move_to_prepare_point(start_point)
-        self.set_move_speed(400)
-        self.move_to_cut_deepth()
-        self.move_xy(start_point.x, start_point.y)
-
+    def draw_line_and_arc(self, start_entity, start_point, end_point):
         entity = start_entity
         sp = start_point
         ep = end_point
