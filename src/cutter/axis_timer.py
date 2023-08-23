@@ -15,9 +15,10 @@ class AxisTimer:
     def addObserver(self, obj):
         self.observers.append(obj)
 
-    def notify(self):
-        # print("updateAxis")
+    def removeObserver(self, obj):
+        self.observers.remove(obj)
 
+    def notify(self):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
             state = {"x": x, "y": y, "z": z, "is_open": True}

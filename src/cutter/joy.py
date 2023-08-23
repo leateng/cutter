@@ -5,7 +5,7 @@ import qtawesome as qta
 import qtpy.QtCore
 import qtpy.QtWidgets
 from qtpy.QtCore import QSize, Qt
-from qtpy.QtGui import QBrush, QColor, QIcon, QPixmap
+from qtpy.QtGui import QBrush, QCloseEvent, QColor, QIcon, QPixmap
 from qtpy.QtWidgets import (
     QDialog,
     QDoubleSpinBox,
@@ -35,6 +35,7 @@ class JoyDialog(QDialog):
             self.tool_radius = parent.tool_radius.value()
         self.joy_pad = JoyPad()
         self.ab_move = ABMoveWidget(self)
+        axis_timer.addObserver(self.ab_move.machine_info)
         self.ab_move.resize(200, 200)
 
         main_layout = QHBoxLayout()
@@ -45,6 +46,9 @@ class JoyDialog(QDialog):
         self.setWindowTitle("JOY")
         self.setWindowIcon(QIcon(QPixmap(":/images/game-controller.png")))
         self.setFixedSize(1100, 590)
+
+    def closeEvent(self, arg__1: QCloseEvent) -> None:
+        axis_timer.removeObserver(self.ab_move.machine_info)
 
 
 class JoyButton(QPushButton):
@@ -280,7 +284,7 @@ class ABMoveWidget(QWidget):
         if ALIGNMENT["z"] is not None:
             self.align_z.setValue(ALIGNMENT["z"])
 
-        if self.parent.tool_radius == 0.0:
+        if self.parent().tool_radius == 0.0:
             self.align_x_button.setEnabled(False)
             self.align_y_button.setEnabled(False)
             self.align_z_button.setEnabled(False)
@@ -345,7 +349,7 @@ class ABMoveWidget(QWidget):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
             ALIGNMENT["x"] = x
-            self.align_x.setValue(ALIGNMENT["x"] + self.parent.tool_radius)
+            self.align_x.setValue(ALIGNMENT["x"] + self.parent().tool_radius)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
@@ -353,7 +357,7 @@ class ABMoveWidget(QWidget):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
             ALIGNMENT["y"] = y
-            self.align_y.setValue(ALIGNMENT["y"] + self.parent.tool_radius)
+            self.align_y.setValue(ALIGNMENT["y"] + self.parent().tool_radius)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
