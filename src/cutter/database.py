@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import Optional, Tuple
 from qtpy.QtSql import QSqlDatabase, QSqlQuery
 from cutter.models import Recipe, User
-from IPython import embed
+
+# from IPython import embed
 
 
 local_app_data = Path(os.environ["LOCALAPPDATA"])

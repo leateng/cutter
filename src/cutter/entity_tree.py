@@ -38,7 +38,6 @@ class EntityTree(QTreeWidget):
         ):
             layer_groups[layer_name] = list(layer_entities)
 
-        # embed()
         # # 读取dxf文件
         # doc = ezdxf.readfile("./dxf-examples/gb.dxf")
         # msp = doc.modelspace()

@@ -69,7 +69,6 @@ class GCode:
             self.draw_line_and_arc()
 
     def draw_circle(self, circle):
-        # embed()
         center = circle.dxf.center
         radius = circle.dxf.radius
 
@@ -105,7 +104,6 @@ class GCode:
                 self.move_xy(ep.x, ep.y)
 
             if entity.dxftype() == "ARC":
-                # embed()
                 center = entity.dxf.center
 
                 instruct = (
@@ -250,7 +248,6 @@ class GCode:
 
         dist_lines.sort(key=lambda x: x[1])
 
-        # embed()
         return (dist_lines[0][0], dist_lines[1][0])
 
     def min_point(self, p1, p2):

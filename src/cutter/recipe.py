@@ -2,7 +2,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 import shutil
-from IPython import embed
+
+# from IPython import embed
 from PySide2.QtCore import QItemSelectionModel
 
 from ezdxf import recover

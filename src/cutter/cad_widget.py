@@ -187,7 +187,6 @@ class DxfEntityScence(QGraphicsScene):
             end_angle = -entity.dxf.start_angle
             if end_angle < start_angle:
                 end_angle = end_angle + 360
-            # embed()
 
             # 创建圆弧路径
             path = QPainterPath()
@@ -206,7 +205,6 @@ class DxfEntityScence(QGraphicsScene):
             item.setPath(path)
         elif entity.dxftype() == "LWPOLYLINE":
             path = QPainterPath()
-            # embed()
             first_vertex = entity[0]
             path.moveTo(first_vertex[0], first_vertex[1])
 
