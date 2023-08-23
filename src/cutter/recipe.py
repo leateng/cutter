@@ -133,6 +133,7 @@ class RecipeDialg(QDialog):
         self.origin_filename = QLabel()
         self.created_by = QLabel()
         self.created_at = QLabel()
+        self.rotation_speed.setRange(0, 6000)
 
         # search enter key event
         self.search_edit.installEventFilter(self)
