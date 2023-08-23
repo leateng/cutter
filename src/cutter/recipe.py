@@ -3,7 +3,6 @@ from pathlib import Path
 from typing import Optional
 import shutil
 
-# from IPython import embed
 from PySide2.QtCore import QItemSelectionModel, Signal
 
 from ezdxf import recover

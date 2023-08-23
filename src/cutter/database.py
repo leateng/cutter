@@ -5,8 +5,6 @@ from typing import Optional, Tuple
 from qtpy.QtSql import QSqlDatabase, QSqlQuery
 from cutter.models import Recipe, User
 
-# from IPython import embed
-
 
 local_app_data = Path(os.environ["LOCALAPPDATA"])
 cutter_data_path = local_app_data / "cmp-cutter"

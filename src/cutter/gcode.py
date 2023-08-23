@@ -1,8 +1,5 @@
 from ezdxf.math import BoundingBox, Vec3
 from ezdxf import bbox
-
-# from IPython import embed
-
 from cutter.consts import ALIGNMENT
 import math
 
