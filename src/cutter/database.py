@@ -121,6 +121,27 @@ def get_users():
 
     return users
 
+def get_user_by_id(user_id: int) -> Optional[User]:
+    user = None
+    query = QSqlQuery(DB_CONN)
+    query.prepare(f"SELECT * FROM users WHERE id={user_id}")
+    if not query.exec_():
+        print("sql error:", query.lastError().text())
+    else:
+        print(f"get user")
+        if query.next():
+            # record = query.record()
+            id = query.value("id")
+            name = query.value("name")
+            department = query.value("department")
+            role = query.value("role")
+            created_at = query.value("created_at")
+
+            user = User(id, name, None, role, department, created_at)
+
+    return user
+
+
 
 def create_user(user):
     query = QSqlQuery(DB_CONN)

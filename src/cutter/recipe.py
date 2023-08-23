@@ -38,6 +38,7 @@ from cutter.database import (
     create_user,
     delete_recipe,
     get_recipes,
+    get_user_by_id,
     update_recipe,
 )
 from cutter.models import Recipe
@@ -120,13 +121,15 @@ class RecipeDialg(QDialog):
         self.scene = DxfEntityScence([])
 
         self._layout = QHBoxLayout(self)
+        self.load_dxf_button = QPushButton(QIcon(":/images/add.png"), "")
+        self.load_dxf_button.clicked.connect(self._select_doc)
         self.search_edit = QLineEdit()
+        self.search_edit.setStyleSheet(f"height: {self.load_dxf_button.sizeHint().height()}px;")
         self.tool_radius = QSpinBox()
         self.cutter_offset = QSpinBox()
         self.cutter_deepth = QSpinBox()
         self.rotation_speed = QSpinBox()
-        self.load_dxf_button = QPushButton(QIcon(":/images/add.png"), "")
-        self.load_dxf_button.clicked.connect(self._select_doc)
+        self.load_dxf_button.height()
         self.recipe_name = QLineEdit()
         self.origin_filename = QLabel()
         self.created_by = QLabel()
@@ -379,16 +382,18 @@ class RecipeDialg(QDialog):
 
     def load_recipe(self):
         recipe = self.current_recipe
-        if recipe:
+        if recipe is not None and recipe._created_by is not None:
+            creator  = get_user_by_id(recipe._created_by)
             self.del_button.setEnabled(True)
             self.add_button.setEnabled(True)
-            self.tool_radius.setValue(recipe._tool_radius)
-            self.cutter_offset.setValue(recipe._cutter_offset)
-            self.cutter_deepth.setValue(recipe._cutter_deepth)
-            self.rotation_speed.setValue(recipe._rotation_speed)
-            self.recipe_name.setText(recipe._name)
-            self.origin_filename.setText(recipe._file_name)
-            self.created_by
-            self.created_at.setText(recipe._created_at)
+            self.tool_radius.setValue(recipe._tool_radius or 0)
+            self.cutter_offset.setValue(recipe._cutter_offset or 0)
+            self.cutter_deepth.setValue(recipe._cutter_deepth or 0)
+            self.rotation_speed.setValue(recipe._rotation_speed or 0)
+            self.recipe_name.setText(recipe._name or "")
+            self.origin_filename.setText(recipe._file_name or "")
+            if creator is not None:
+                self.created_by.setText(creator._name or "")
+            self.created_at.setText(recipe._created_at or "")
             dst = DXF_PATH / f"{recipe._id}.dxf"
             self.load_dxf_view(str(dst))
