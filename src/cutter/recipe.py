@@ -4,12 +4,12 @@ from typing import Optional
 import shutil
 
 # from IPython import embed
-from PySide2.QtCore import QItemSelectionModel
+from PySide2.QtCore import QItemSelectionModel, Signal
 
 from ezdxf import recover
 from ezdxf.lldxf.const import DXFError
 from qtpy import QtCore
-from qtpy.QtGui import QIcon, QImage, QPixmap
+from qtpy.QtGui import QCloseEvent, QIcon, QImage, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
     QComboBox,
@@ -46,8 +46,26 @@ from cutter.models import Recipe
 class RecipeCombo(QComboBox):
     def __init__(self):
         super().__init__()
-        self.addItems(["", "recipe 1", "recipe 2", "recipe 3"])
+        self.initRecipeItems()
         self.setCurrentIndex(0)
+
+    def initRecipeItems(self):
+        self.recipes = get_recipes()
+        self.addItem("", None)
+        for r in self.recipes:
+            self.addItem(r._name, r)
+
+    def reloadRecipes(self):
+        self.clear()
+        self.initRecipeItems()
+
+    def setCurrentIndexByRecipeId(self, recipe_id):
+        index = 0
+        for idx, e in enumerate(self.recipes):
+            if recipe_id == e._id:
+                index = (idx + 1)
+
+        self.setCurrentIndex(index)
 
 
 class RecipeListModel(QtCore.QAbstractListModel):
@@ -79,6 +97,8 @@ class RecipeListView(QListView):
 
 
 class RecipeDialg(QDialog):
+    recipes_changed = Signal()
+
     def __init__(self, parent: Optional[QWidget] = None) -> None:
         super().__init__(parent)
         self.current_recipe: Optional[Recipe] = None
@@ -205,6 +225,7 @@ class RecipeDialg(QDialog):
         if recipe._id is not None:
             status, recipe_id = update_recipe(recipe)
             QMessageBox.information(self, "Cutter", "更新配方成功！")
+            self.recipes_changed.emit()
         else:
             recipe._created_by = (
                 g.CURRENT_USER._id if g.CURRENT_USER is not None else None
@@ -216,6 +237,7 @@ class RecipeDialg(QDialog):
                 self._save_recipe_dxf(recipe_id)
                 self.refresh_recipe_list()
                 QMessageBox.information(self, "Cutter", "添加配方成功！")
+                self.recipes_changed.emit()
 
         if status == False:
             QMessageBox.critical(self, "Cutter", "添加Recipe失败！")
@@ -235,6 +257,7 @@ class RecipeDialg(QDialog):
                 self.current_recipe = None
                 self.refresh_recipe_list()
                 self.sync_recipe_ui()
+                self.recipes_changed.emit()
 
     def refresh_recipe_list(self, cond = None):
         self.recipes_model.recipes = get_recipes(cond)

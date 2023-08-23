@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 import ezdxf
 import pyads
@@ -28,6 +29,7 @@ from qtpy.QtWidgets import (
 
 from cutter.about_dialog import AboutUsDialog
 from cutter.axis_timer import axis_timer
+from cutter.database import DXF_PATH
 from cutter.error_info_widget import ErrorInfo
 from cutter.error_report_timer import error_report_timer
 from cutter.cad_widget import CADGraphicsView, DxfEntityScence
@@ -37,6 +39,7 @@ from cutter.gcode import GCode
 from cutter.gcode_dialog import GCodeDialog
 from cutter.joy import JoyDialog
 from cutter.machine_info import MachineInfo
+from cutter.models import Recipe
 from cutter.plc import PLC_CONN, reset_machine
 from cutter.recipe import RecipeCombo, RecipeDialg
 from cutter.users import UsersDialog
@@ -108,6 +111,9 @@ class MainWindow(QMainWindow):
         self.cutter_deepth = QDoubleSpinBox()
         self.rotation_speed.setRange(0, 6000)
 
+        # events
+        self.recipe_combox.currentIndexChanged.connect(self.recipe_selection_changed)
+
         machine_param_layout = QFormLayout()
         machine_param_layout.addRow(QLabel("刀具半径(mm)"), self.tool_radius)
         machine_param_layout.addRow(QLabel("偏移量(mm)"), self.cutter_offset)
@@ -156,6 +162,9 @@ class MainWindow(QMainWindow):
             caption="Select CAD Document",
             filter="CAD Documents (*.dxf *.DXF)",
         )
+        self.load_dxf_file(path)
+
+    def load_dxf_file(self, path):
         if path:
             try:
                 try:
@@ -174,6 +183,10 @@ class MainWindow(QMainWindow):
                     "DXF Structure Error",
                     f'Invalid DXF file "{path}": {str(e)}',
                 )
+        else:
+            self.set_empty_document()
+
+
 
     def set_document(self, doc, auditor):
         doc.modelspace()
@@ -189,12 +202,24 @@ class MainWindow(QMainWindow):
         # self.entity_tree = EntityTree(self.dxf_entities)
         self.entity_tree.set_entities(self.dxf_entities)
 
+    def set_empty_document(self):
+        self.doc = None
+        self.dxf_entities = []
+
+        # draw entity view
+        self.scene = DxfEntityScence(self.dxf_entities)
+        self.view.setScene(self.scene)
+
+        # draw entity tree
+        self.entity_tree.set_entities(self.dxf_entities)
+
     def _open_about_us(self):
         dlg = AboutUsDialog()
         dlg.exec()
 
     def _open_recipe_dialog(self):
         dlg = RecipeDialg(self)
+        dlg.recipes_changed.connect(self.refresh_recipe_combo)
         dlg.resize(1200, 600)
         dlg.exec()
 
@@ -324,3 +349,30 @@ class MainWindow(QMainWindow):
     def _exit_fullscreen(self):
         if self.isFullScreen():
             self.showNormal()
+
+    def refresh_recipe_combo(self):
+        print("refresh recipe dialog")
+        current_index = self.recipe_combox.currentIndex()
+        current_recipe = self.recipe_combox.itemData(current_index)
+        self.recipe_combox.reloadRecipes()
+        if current_recipe is not None:
+            self.recipe_combox.setCurrentIndexByRecipeId(current_recipe._id)
+
+    def recipe_selection_changed(self, index):
+        recipe = self.recipe_combox.itemData(index)
+        self.load_recipe(recipe)
+
+    def load_recipe(self, recipe: Optional[Recipe]):
+        if recipe is not None:
+            self.tool_radius.setValue(recipe._tool_radius or 0)
+            self.cutter_offset.setValue(recipe._cutter_offset or 0)
+            self.rotation_speed.setValue(recipe._rotation_speed or 0)
+            self.cutter_deepth.setValue(recipe._cutter_deepth or 0)
+            dxf_path = DXF_PATH / f"{recipe._id}.dxf"
+            self.load_dxf_file(dxf_path)
+        else:
+            self.tool_radius.setValue(0)
+            self.cutter_offset.setValue(0)
+            self.rotation_speed.setValue(0)
+            self.cutter_deepth.setValue(0)
+            self.set_empty_document()
