@@ -137,7 +137,7 @@ class GCode:
         return float(ALIGNMENT["z"]) + 10
 
     def move_to_prepare_point(self, start_point):
-        self.fast_move_xy(start_point.x, start_point.y - 10)
+        self.fast_move_xy(start_point.x - 10, start_point.y)
 
     def move_to_cut_deepth(self):
         self.instructions.append(

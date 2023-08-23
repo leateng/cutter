@@ -30,8 +30,11 @@ from cutter.consts import ALIGNMENT
 class JoyDialog(QDialog):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
+        self.tool_radius = 0
+        if parent is not None:
+            self.tool_radius = parent.tool_radius.value()
         self.joy_pad = JoyPad()
-        self.ab_move = ABMoveWidget()
+        self.ab_move = ABMoveWidget(self)
         self.ab_move.resize(200, 200)
 
         main_layout = QHBoxLayout()
@@ -120,16 +123,14 @@ class JoyButton(QPushButton):
         self.send_move_instruction(
             self.speed_instruction_name(), self.speed, pyads.PLCTYPE_LREAL
         )
-        self.send_move_instruction(
-            self.instruction_name(), True, pyads.PLCTYPE_BOOL)
+        self.send_move_instruction(self.instruction_name(), True, pyads.PLCTYPE_BOOL)
         self.send_move_instruction("GVL_HMI.bJog", True, pyads.PLCTYPE_BOOL)
 
     def on_button_released(self):
         print("Jog button released")
         self.press_status = False
 
-        self.send_move_instruction(
-            self.instruction_name(), False, pyads.PLCTYPE_BOOL)
+        self.send_move_instruction(self.instruction_name(), False, pyads.PLCTYPE_BOOL)
         self.send_move_instruction("GVL_HMI.bJog", False, pyads.PLCTYPE_BOOL)
 
 
@@ -279,6 +280,11 @@ class ABMoveWidget(QWidget):
         if ALIGNMENT["z"] is not None:
             self.align_z.setValue(ALIGNMENT["z"])
 
+        if self.parent.tool_radius == 0.0:
+            self.align_x_button.setEnabled(False)
+            self.align_y_button.setEnabled(False)
+            self.align_z_button.setEnabled(False)
+
         align_layout_x = QHBoxLayout()
         align_layout_x.addWidget(QLabel("X: "))
         align_layout_x.addWidget(self.align_x)
@@ -328,14 +334,10 @@ class ABMoveWidget(QWidget):
             z = self.z_spinbox.value()
             print(f"absoulute move to: x={x}, y={y}, z={z}")
 
-            PLC_CONN.write_by_name(
-                "GVL_HMI.lrAutoMovePosX", x, pyads.PLCTYPE_LREAL)
-            PLC_CONN.write_by_name(
-                "GVL_HMI.lrAutoMovePosY", y, pyads.PLCTYPE_LREAL)
-            PLC_CONN.write_by_name(
-                "GVL_HMI.lrAutoMovePosZ", z, pyads.PLCTYPE_LREAL)
-            PLC_CONN.write_by_name("GVL_HMI.bAutoMove",
-                                   True, pyads.PLCTYPE_BOOL)
+            PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosX", x, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosY", y, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name("GVL_HMI.lrAutoMovePosZ", z, pyads.PLCTYPE_LREAL)
+            PLC_CONN.write_by_name("GVL_HMI.bAutoMove", True, pyads.PLCTYPE_BOOL)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
@@ -343,7 +345,7 @@ class ABMoveWidget(QWidget):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
             ALIGNMENT["x"] = x
-            self.align_x.setValue(ALIGNMENT["x"])
+            self.align_x.setValue(ALIGNMENT["x"] + self.parent.tool_radius)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
@@ -351,7 +353,7 @@ class ABMoveWidget(QWidget):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
             ALIGNMENT["y"] = y
-            self.align_y.setValue(ALIGNMENT["y"])
+            self.align_y.setValue(ALIGNMENT["y"] + self.parent.tool_radius)
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 

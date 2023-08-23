@@ -204,7 +204,7 @@ class MainWindow(QMainWindow):
         dlg.exec()
 
     def _open_joy(self):
-        dlg = JoyDialog()
+        dlg = JoyDialog(self)
         dlg.exec()
 
     # def _init_statusbar(self):
