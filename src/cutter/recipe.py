@@ -112,6 +112,9 @@ class RecipeDialg(QDialog):
         self.created_by = QLabel()
         self.created_at = QLabel()
 
+        # search enter key event
+        self.search_edit.installEventFilter(self)
+
         # left layout
         left_layout = QVBoxLayout()
         search_layout = QHBoxLayout()
@@ -175,8 +178,18 @@ class RecipeDialg(QDialog):
         self._layout.setStretch(0, 1)
         self._layout.setStretch(1, 2)
 
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.KeyPress and obj is self.search_edit:
+            if event.key() == QtCore.Qt.Key_Return and self.search_edit.hasFocus():
+                name = self.search_edit.text()
+                self.search_recipe_list(name)
+                return True
+
+        return super().eventFilter(obj, event)
+
     def saveRecipe(self):
         if self.current_recipe is None:
+            QMessageBox.critical(self, "Cutter", "添加配方失败！")
             return
 
         recipe = self.current_recipe
@@ -191,6 +204,7 @@ class RecipeDialg(QDialog):
 
         if recipe._id is not None:
             status, recipe_id = update_recipe(recipe)
+            QMessageBox.information(self, "Cutter", "更新配方成功！")
         else:
             recipe._created_by = (
                 g.CURRENT_USER._id if g.CURRENT_USER is not None else None
@@ -198,14 +212,23 @@ class RecipeDialg(QDialog):
             recipe._created_at = datetime.now()
             status, recipe_id = create_recipe(recipe)
             if status is True and recipe_id is not None:
+                self.current_recipe._id = recipe_id
                 self._save_recipe_dxf(recipe_id)
                 self.refresh_recipe_list()
+                QMessageBox.information(self, "Cutter", "添加配方成功！")
 
         if status == False:
-            QMessageBox.critical(self, "Error", "添加Recipe失败！")
+            QMessageBox.critical(self, "Cutter", "添加Recipe失败！")
             return
 
+
     def _delete_recipe(self):
+        qm = QMessageBox
+        ret = qm.question(self,'删除配方', "确认删除配方?", qm.Yes | qm.No)
+
+        if ret != qm.Yes:
+            return
+
         if self.current_recipe is not None:
             if self.current_recipe._id is not None:
                 delete_recipe(self.current_recipe._id)
@@ -213,8 +236,8 @@ class RecipeDialg(QDialog):
                 self.refresh_recipe_list()
                 self.sync_recipe_ui()
 
-    def refresh_recipe_list(self):
-        self.recipes_model.recipes = get_recipes()
+    def refresh_recipe_list(self, cond = None):
+        self.recipes_model.recipes = get_recipes(cond)
         self.recipes_model.layoutChanged.emit()
 
         if self.current_recipe is None:
@@ -226,6 +249,12 @@ class RecipeDialg(QDialog):
                 index = self.recipes_model.getIndexById(self.current_recipe._id)
                 if index is not None:
                     self.recipe_view.setCurrentIndex(index)
+
+    def search_recipe_list(self, name):
+        cond = "1=1"
+        if name is not None and name != "":
+            cond = f"name like '%{name}%'"
+        self.refresh_recipe_list(cond)
 
     def _select_doc(self):
         path, _ = QFileDialog.getOpenFileName(
@@ -239,9 +268,16 @@ class RecipeDialg(QDialog):
         pypath = Path(path)
         self.recipe_name.setText(pypath.stem)
         self.origin_filename.setText(pypath.name)
+        self.tool_radius.setValue(0)
+        self.cutter_offset.setValue(0)
+        self.cutter_deepth.setValue(0)
+        self.rotation_speed.setValue(0)
         self.created_at.setText(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         if g.CURRENT_USER is not None and g.CURRENT_USER._name is not None:
             self.created_by.setText(g.CURRENT_USER._name)
+
+        self.recipe_view.clearSelection()
+        self.del_button.setEnabled(False)
         self.add_button.setEnabled(True)
 
     def load_dxf_view(self, path):
@@ -331,3 +367,5 @@ class RecipeDialg(QDialog):
             self.origin_filename.setText(recipe._file_name)
             self.created_by
             self.created_at.setText(recipe._created_at)
+            dst = DXF_PATH / f"{recipe._id}.dxf"
+            self.load_dxf_view(str(dst))

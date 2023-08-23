@@ -250,10 +250,14 @@ def update_recipe(recipe: Recipe) -> Tuple[bool, Optional[int]]:
         return (ret, None)
 
 
-def get_recipes():
+def get_recipes(cond = None):
     recipes = []
+    sql = "SELECT * FROM recipes WHERE 1=1 order by name asc"
     query = QSqlQuery(DB_CONN)
-    query.prepare("SELECT * FROM recipes WHERE 1=1 order by name asc")
+    if cond is not None:
+        sql = f"SELECT * FROM recipes WHERE {cond} order by name asc"
+
+    query.prepare(sql)
     if not query.exec_():
         print("sql error:", query.lastError().text())
     else:
