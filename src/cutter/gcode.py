@@ -69,7 +69,7 @@ class GCode:
             self.move_to_cut_deepth()
             self.move_xy(start_point.x, start_point.y)
             self.draw_line_and_arc(start_entity, start_point, end_point)
-            self.draw_line_and_arc(start_entity, start_point, end_point)
+            # self.draw_line_and_arc(start_entity, start_point, end_point)
 
     def draw_circle(self, circle):
         center = circle.dxf.center
@@ -89,12 +89,12 @@ class GCode:
             "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(start.x, start.y, 0, -radius)
         )
         # repeat
-        self.instructions.append(
-            "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(end.x, end.y, 0, radius)
-        )
-        self.instructions.append(
-            "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(start.x, start.y, 0, -radius)
-        )
+        # self.instructions.append(
+        #     "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(end.x, end.y, 0, radius)
+        # )
+        # self.instructions.append(
+        #     "G03 X{:.3f} Y{:.3f} I{:.3f}  J{:.3f}".format(start.x, start.y, 0, -radius)
+        # )
 
     def draw_line_and_arc(self, start_entity, start_point, end_point):
         entity = start_entity
