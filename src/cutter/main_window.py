@@ -186,8 +186,6 @@ class MainWindow(QMainWindow):
         else:
             self.set_empty_document()
 
-
-
     def set_document(self, doc, auditor):
         doc.modelspace()
         self.doc = doc

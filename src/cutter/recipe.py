@@ -3,11 +3,10 @@ from pathlib import Path
 from typing import Optional
 import shutil
 
-from PySide2.QtCore import QItemSelectionModel, Signal
-
 from ezdxf import recover
 from ezdxf.lldxf.const import DXFError
 from qtpy import QtCore
+from qtpy.QtCore import QItemSelectionModel, Signal
 from qtpy.QtGui import QCloseEvent, QIcon, QImage, QPixmap
 from qtpy.QtWidgets import (
     QApplication,
@@ -63,7 +62,7 @@ class RecipeCombo(QComboBox):
         index = 0
         for idx, e in enumerate(self.recipes):
             if recipe_id == e._id:
-                index = (idx + 1)
+                index = idx + 1
 
         self.setCurrentIndex(index)
 
@@ -123,7 +122,9 @@ class RecipeDialg(QDialog):
         self.load_dxf_button = QPushButton(QIcon(":/images/add.png"), "")
         self.load_dxf_button.clicked.connect(self._select_doc)
         self.search_edit = QLineEdit()
-        self.search_edit.setStyleSheet(f"height: {self.load_dxf_button.sizeHint().height()}px;")
+        self.search_edit.setStyleSheet(
+            f"height: {self.load_dxf_button.sizeHint().height()}px;"
+        )
         self.tool_radius = QSpinBox()
         self.cutter_offset = QSpinBox()
         self.cutter_deepth = QSpinBox()
@@ -246,10 +247,9 @@ class RecipeDialg(QDialog):
             QMessageBox.critical(self, "Cutter", "添加Recipe失败！")
             return
 
-
     def _delete_recipe(self):
         qm = QMessageBox
-        ret = qm.question(self,'删除配方', "确认删除配方?", qm.Yes | qm.No)
+        ret = qm.question(self, "删除配方", "确认删除配方?", qm.Yes | qm.No)
 
         if ret != qm.Yes:
             return
@@ -262,7 +262,7 @@ class RecipeDialg(QDialog):
                 self.sync_recipe_ui()
                 self.recipes_changed.emit()
 
-    def refresh_recipe_list(self, cond = None):
+    def refresh_recipe_list(self, cond=None):
         self.recipes_model.recipes = get_recipes(cond)
         self.recipes_model.layoutChanged.emit()
 
@@ -383,7 +383,7 @@ class RecipeDialg(QDialog):
     def load_recipe(self):
         recipe = self.current_recipe
         if recipe is not None and recipe._created_by is not None:
-            creator  = get_user_by_id(recipe._created_by)
+            creator = get_user_by_id(recipe._created_by)
             self.del_button.setEnabled(True)
             self.add_button.setEnabled(True)
             self.tool_radius.setValue(recipe._tool_radius or 0)

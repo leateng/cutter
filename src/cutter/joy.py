@@ -348,16 +348,16 @@ class ABMoveWidget(QWidget):
     def confirm_alignment_x(self):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
-            ALIGNMENT["x"] = x
-            self.align_x.setValue(ALIGNMENT["x"] + self.parent().tool_radius)
+            ALIGNMENT["x"] = x + self.parent().tool_radius
+            self.align_x.setValue(ALIGNMENT["x"])
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
     def confirm_alignment_y(self):
         if PLC_CONN.is_open:
             x, y, z = read_axis()
-            ALIGNMENT["y"] = y
-            self.align_y.setValue(ALIGNMENT["y"] + self.parent().tool_radius)
+            ALIGNMENT["y"] = y + self.parent().tool_radius
+            self.align_y.setValue(ALIGNMENT["y"])
         else:
             QMessageBox.warning(self, "Warning", "PLC 未连接")
 
