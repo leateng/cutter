@@ -74,24 +74,27 @@ class JoyButton(QPushButton):
 
         self.setStyleSheet(
             """
-            QPushButton{
+            QPushButton {
+                background-color: #e1e1e1;
+                color: #ffffff;
+                border: 1px solid #adadad;
                 font-size: 50px;
-                width: 100px;
-                height: 100px;
+                width: 98px;
+                height: 98px;
                 border-radius: 50px;
-                image: url(:/images/button-bg.png);
-                border: 0px;
-                
+                font-size: 50px;
             }
-            QPushButton:hover{
-                image: url(:/images/button-bg2.png);
-                border: 0px;
+            QPushButton:hover {
+                background-color: #e5f1fb;
+                border: 2px solid #0078d7;
+                width: 96px;
+                height: 96px;
             }
-            QPushButton:pressed{
-                image: url(:/images/button-bg.png);
-                border: 0px;
+            QPushButton:pressed {
+                background-color: #e5f1fb;
+                border: 2px solid #0078d7;
             }
-                           """
+            """
         )
         self.pressed.connect(self.on_button_pressed)
         self.released.connect(self.on_button_released)
@@ -142,7 +145,7 @@ class JoyPad(QWidget):
     def __init__(self, parent: Optional[qtpy.QtWidgets.QWidget] = None) -> None:
         super().__init__(parent)
         # icon_text_color = "#525960"
-        icon_text_color = "#1C1C1B"
+        icon_text_color = "#666666"
 
         self.button_up = JoyButton(
             qta.icon("fa.angle-double-up", color=icon_text_color),
