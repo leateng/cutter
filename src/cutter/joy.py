@@ -45,7 +45,7 @@ class JoyDialog(QDialog):
 
         self.setWindowTitle("JOY")
         self.setWindowIcon(QIcon(QPixmap(":/images/game-controller.png")))
-        self.setFixedSize(1100, 590)
+        self.setFixedSize(1100, 550)
 
     def closeEvent(self, arg__1: QCloseEvent) -> None:
         axis_timer.removeObserver(self.ab_move.machine_info)
@@ -79,16 +79,16 @@ class JoyButton(QPushButton):
                 color: #ffffff;
                 border: 1px solid #adadad;
                 font-size: 50px;
-                width: 98px;
-                height: 98px;
-                border-radius: 50px;
+                width: 88px;
+                height: 88px;
+                border-radius: 45px;
                 font-size: 50px;
             }
             QPushButton:hover {
                 background-color: #e5f1fb;
                 border: 2px solid #0078d7;
-                width: 96px;
-                height: 96px;
+                width: 86px;
+                height: 86px;
             }
             QPushButton:pressed {
                 background-color: #e5f1fb;
